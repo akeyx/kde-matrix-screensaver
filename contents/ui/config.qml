@@ -315,6 +315,7 @@ Item {
             Loader {
                 anchors.fill: parent
                 source: "main.qml"
+                onLoaded: item.wallpaper = wallpaper
             }
 
             // Close on click or key press

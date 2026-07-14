@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Window 2.15
 
 Window {
+    id: root
     width: 1280
     height: 720
     visible: true
@@ -33,5 +34,6 @@ Window {
     Loader {
         anchors.fill: parent
         source: "contents/ui/main.qml"
+        onLoaded: item.wallpaper = wallpaper
     }
 }

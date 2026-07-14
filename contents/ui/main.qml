@@ -18,34 +18,36 @@ Rectangle {
     // Default wallpaper config for standalone testing.
     // When running inside Plasma, the engine injects its own "wallpaper"
     // context property which overrides this one automatically.
-    property QtObject wallpaper: QtObject {
-        readonly property QtObject configuration: QtObject {
-            property string version: "classic"
-            property string font: "matrixcode"
-            property string effect: "palette"
-            property int numColumns: 80
-            property double animationSpeed: 1.0
-            property double fallSpeed: 0.3
-            property double cycleSpeed: 0.03
-            property double raindropLength: 0.75
-            property double slant: 0.0
-            property double bloomSize: 0.4
-            property double bloomStrength: 0.7
-            property double ditherMagnitude: 0.05
-            property double resolution: 0.75
-            property color cursorColor: "#c1ff75"
-            property color backgroundColor: "#000000"
-            property color glintColor: "#ffffff"
-            property bool volumetric: false
-            property bool glyphFlip: false
-            property int glyphRotation: 0
-            property bool skipIntro: true
-            property bool suppressWarnings: true
-            property bool camera: false
-            property string stripeColors: ""
-            property string palette: ""
+    property var wallpaper: ({
+        configuration: {
+            version: "classic",
+            font: "matrixcode",
+            effect: "palette",
+            scalingMode: 1,
+            characterSize: 24,
+            numColumns: 80,
+            animationSpeed: 1.0,
+            fallSpeed: 0.3,
+            cycleSpeed: 0.03,
+            raindropLength: 0.75,
+            slant: 0.0,
+            bloomSize: 0.4,
+            bloomStrength: 0.7,
+            ditherMagnitude: 0.05,
+            resolution: 0.75,
+            cursorColor: "#c1ff75",
+            backgroundColor: "#000000",
+            glintColor: "#ffffff",
+            volumetric: false,
+            glyphFlip: false,
+            glyphRotation: 0,
+            skipIntro: true,
+            suppressWarnings: true,
+            camera: false,
+            stripeColors: "",
+            palette: ""
         }
-    }
+    })
 
     FontLoader {
         id: matrixFont
