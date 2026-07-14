@@ -1,0 +1,20 @@
+{
+    "KPackageStructure": "Plasma/Wallpaper",
+    "KPlugin": {
+        "Id": "org.kde.plasma.matrix-screensaver",
+        "Name": "Matrix Screensaver",
+        "Description": "GPU Accelerated Matrix Digital Rain Wallpaper & Screensaver",
+        "Icon": "preferences-desktop-screensaver",
+        "ServiceTypes": [
+            "Plasma/Wallpaper"
+        ],
+        "Authors": [
+            {
+                "Name": "Antigravity",
+                "Email": "a.key@moronet.pl"
+            }
+        ],
+        "Version": "1.0",
+        "License": "MIT"
+    }
+}

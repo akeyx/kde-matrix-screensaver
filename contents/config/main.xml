@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+      http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+    <kcfgfile name=""/>
+    <group name="General">
+        <entry name="version" type="String">
+            <default>classic</default>
+        </entry>
+        <entry name="font" type="String">
+            <default>matrixcode</default>
+        </entry>
+        <entry name="effect" type="String">
+            <default>palette</default>
+        </entry>
+        <entry name="numColumns" type="Int">
+            <default>80</default>
+        </entry>
+        <entry name="scalingMode" type="Int">
+            <default>1</default>
+        </entry>
+        <entry name="characterSize" type="Int">
+            <default>24</default>
+        </entry>
+        <entry name="animationSpeed" type="Double">
+            <default>1.0</default>
+        </entry>
+        <entry name="fallSpeed" type="Double">
+            <default>0.3</default>
+        </entry>
+        <entry name="cycleSpeed" type="Double">
+            <default>0.03</default>
+        </entry>
+        <entry name="raindropLength" type="Double">
+            <default>0.75</default>
+        </entry>
+        <entry name="slant" type="Double">
+            <default>0.0</default>
+        </entry>
+        <entry name="bloomSize" type="Double">
+            <default>0.4</default>
+        </entry>
+        <entry name="bloomStrength" type="Double">
+            <default>0.7</default>
+        </entry>
+        <entry name="ditherMagnitude" type="Double">
+            <default>0.05</default>
+        </entry>
+        <entry name="resolution" type="Double">
+            <default>0.75</default>
+        </entry>
+        <entry name="cursorColor" type="Color">
+            <default>#c1ff75</default>
+        </entry>
+        <entry name="backgroundColor" type="Color">
+            <default>#000000</default>
+        </entry>
+        <entry name="glintColor" type="Color">
+            <default>#ffffff</default>
+        </entry>
+        <entry name="volumetric" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="glyphFlip" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="glyphRotation" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="skipIntro" type="Bool">
+            <default>true</default>
+        </entry>
+        <entry name="suppressWarnings" type="Bool">
+            <default>true</default>
+        </entry>
+        <entry name="camera" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="stripeColors" type="String">
+            <default></default>
+        </entry>
+        <entry name="palette" type="String">
+            <default></default>
+        </entry>
+    </group>
+</kcfg>
