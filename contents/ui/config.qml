@@ -1,4 +1,5 @@
 import QtQuick 2.15
+import QtQuick.Window 2.15
 import QtQuick.Controls 2.15 as QQC2
 import QtQuick.Layouts 1.15
 import org.kde.kirigami 2.19 as Kirigami
@@ -342,6 +343,72 @@ Item {
                     onTextChanged: root.cfg_palette = text
                     Layout.fillWidth: true
                 }
+                QQC2.Button {
+                    Kirigami.FormData.label: translate("Test Screensaver:")
+                    text: translate("Launch Fullscreen Preview")
+                    icon.name: "media-playback-start"
+                    onClicked: {
+                        testWindowComponent.createObject(root)
+                    }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: testWindowComponent
+        Window {
+            id: testWin
+            visible: true
+            visibility: Window.FullScreen
+            color: "black"
+
+            // Proxy the config settings for main.qml
+            property var wallpaper: ({
+                configuration: {
+                    version: root.cfg_version,
+                    font: root.cfg_font,
+                    effect: root.cfg_effect,
+                    numColumns: root.cfg_numColumns,
+                    scalingMode: root.cfg_scalingMode,
+                    characterSize: root.cfg_characterSize,
+                    animationSpeed: root.cfg_animationSpeed,
+                    fallSpeed: root.cfg_fallSpeed,
+                    cycleSpeed: root.cfg_cycleSpeed,
+                    raindropLength: root.cfg_raindropLength,
+                    slant: root.cfg_slant,
+                    bloomSize: root.cfg_bloomSize,
+                    bloomStrength: root.cfg_bloomStrength,
+                    ditherMagnitude: root.cfg_ditherMagnitude,
+                    resolution: root.cfg_resolution,
+                    cursorColor: root.cfg_cursorColor,
+                    backgroundColor: root.cfg_backgroundColor,
+                    glintColor: root.cfg_glintColor,
+                    volumetric: root.cfg_volumetric,
+                    glyphFlip: root.cfg_glyphFlip,
+                    glyphRotation: root.cfg_glyphRotation,
+                    skipIntro: root.cfg_skipIntro,
+                    suppressWarnings: root.cfg_suppressWarnings,
+                    camera: root.cfg_camera,
+                    stripeColors: root.cfg_stripeColors,
+                    palette: root.cfg_palette
+                }
+            })
+
+            Loader {
+                anchors.fill: parent
+                source: "main.qml"
+            }
+
+            // Close on click or key press
+            MouseArea {
+                anchors.fill: parent
+                onClicked: testWin.close()
+            }
+            Item {
+                focus: true
+                anchors.fill: parent
+                Keys.onPressed: testWin.close()
             }
         }
     }
