@@ -3,8 +3,8 @@ import Qt5Compat.GraphicalEffects
 
 Rectangle {
     id: root
-    width: 1920
-    height: 1080
+    width: parent ? parent.width : 1920
+    height: parent ? parent.height : 1080
     color: wallpaper.configuration.backgroundColor || "#000000"
 
     // Recording control properties
@@ -147,8 +147,9 @@ Rectangle {
                         
                         readonly property double raindropLength: wallpaper.configuration.raindropLength || 0.75
                         // Apply standard WebGL cyclic gradient
-                        readonly property double rawRainTime: ((columnItem.maxVisibleRows - index) * 0.01 + columnItem.columnTime) / wallpaper.configuration.raindropLength
-                        readonly property double wobbledRainTime: wallpaper.configuration.loops ? rawRainTime : root.wobble(rawRainTime)
+                        readonly property double normalizedY: 1.0 - ((index * root.cellHeight) / Math.max(1, root.height))
+                        readonly property double rawRainTime: (normalizedY * 0.5 + columnItem.columnTime) / (wallpaper.configuration.raindropLength || 0.75)
+                        readonly property double wobbledRainTime: (wallpaper.configuration.loops || false) ? rawRainTime : root.wobble(rawRainTime)
                         
                         // In WebGL, the base brightness is fract(wobbledRainTime).
                         readonly property double rawBrightness: 1.0 - (wobbledRainTime - Math.floor(wobbledRainTime))
@@ -161,8 +162,9 @@ Rectangle {
                         visible: adjustedBrightness > 0.01
 
                         // Mathematically isolate the exact single leading cursor cell by comparing with the cell BELOW, exactly matching WebGL
-                        readonly property double nextRainTime: ((columnItem.maxVisibleRows - (index + 1)) * 0.01 + columnItem.columnTime) / raindropLength
-                        readonly property double nextWobbled: wallpaper.configuration.loops ? nextRainTime : root.wobble(nextRainTime)
+                        readonly property double nextNormalizedY: 1.0 - (((index + 1) * root.cellHeight) / Math.max(1, root.height))
+                        readonly property double nextRainTime: (nextNormalizedY * 0.5 + columnItem.columnTime) / (wallpaper.configuration.raindropLength || 0.75)
+                        readonly property double nextWobbled: (wallpaper.configuration.loops || false) ? nextRainTime : root.wobble(nextRainTime)
                         readonly property double nextBrightness: 1.0 - (nextWobbled - Math.floor(nextWobbled))
                         readonly property bool isCursor: adjustedBrightness > nextBrightness
 

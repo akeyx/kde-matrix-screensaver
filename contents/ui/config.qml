@@ -80,7 +80,8 @@ Item {
                     from: 10
                     to: 500
                     value: root.cfg_numColumns
-                    onValueModified: root.cfg_numColumns = value
+                    editable: true
+                    onValueChanged: root.cfg_numColumns = value
                     visible: root.cfg_scalingMode === 0
                 }
 
@@ -89,7 +90,8 @@ Item {
                     from: 8
                     to: 256
                     value: root.cfg_characterSize
-                    onValueModified: root.cfg_characterSize = value
+                    editable: true
+                    onValueChanged: root.cfg_characterSize = value
                     visible: root.cfg_scalingMode === 1
                 }
 

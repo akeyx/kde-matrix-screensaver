@@ -2,17 +2,15 @@ import QtQuick 2.15
 import QtQuick.Window 2.15
 
 Window {
-    width: 1280
-    height: 720
     visible: true
-    title: "KDE Matrix Screensaver Standalone"
-    color: "black"
-
-    // Provide the expected environment
+    width: 800
+    height: 600
+    property int cfg_numColumns: 500
+    property int cfg_scalingMode: 0
     property var wallpaper: QtObject {
         property var configuration: QtObject {
-            property int numColumns: 500
-            property int scalingMode: 0
+            property int numColumns: cfg_numColumns
+            property int scalingMode: cfg_scalingMode
             property int characterSize: 24
             property real animationSpeed: 1.0
             property real fallSpeed: 0.3
@@ -29,9 +27,14 @@ Window {
             property int glyphRotation: 0
         }
     }
-
+    
     Loader {
         anchors.fill: parent
         source: "contents/ui/main.qml"
+        onLoaded: {
+            console.log("columnsCount: " + item.columnsCount);
+            console.log("colsArray length: " + item.colsArray.length);
+            Qt.quit();
+        }
     }
 }
