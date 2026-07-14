@@ -287,27 +287,27 @@ Item {
             visibility: Window.FullScreen
             color: "black"
 
-            // Proxy the config settings for main.qml
-            property var wallpaper: ({
-                configuration: {
-                    numColumns: root.cfg_numColumns,
-                    scalingMode: root.cfg_scalingMode,
-                    characterSize: root.cfg_characterSize,
-                    animationSpeed: root.cfg_animationSpeed,
-                    fallSpeed: root.cfg_fallSpeed,
-                    cycleSpeed: root.cfg_cycleSpeed,
-                    raindropLength: root.cfg_raindropLength,
-                    slant: root.cfg_slant,
-                    bloomSize: root.cfg_bloomSize,
-                    bloomStrength: root.cfg_bloomStrength,
-                    cursorColor: root.cfg_cursorColor,
-                    backgroundColor: root.cfg_backgroundColor,
-                    glintColor: root.cfg_glintColor,
-                    volumetric: root.cfg_volumetric,
-                    glyphFlip: root.cfg_glyphFlip,
-                    glyphRotation: root.cfg_glyphRotation
+            // Proxy the config settings for main.qml (must be QtObject to preserve bindings)
+            property var wallpaper: QtObject {
+                property var configuration: QtObject {
+                    property int numColumns: root.cfg_numColumns
+                    property int scalingMode: root.cfg_scalingMode
+                    property int characterSize: root.cfg_characterSize
+                    property real animationSpeed: root.cfg_animationSpeed
+                    property real fallSpeed: root.cfg_fallSpeed
+                    property real cycleSpeed: root.cfg_cycleSpeed
+                    property real raindropLength: root.cfg_raindropLength
+                    property real slant: root.cfg_slant
+                    property real bloomSize: root.cfg_bloomSize
+                    property real bloomStrength: root.cfg_bloomStrength
+                    property color cursorColor: root.cfg_cursorColor
+                    property color backgroundColor: root.cfg_backgroundColor
+                    property color glintColor: root.cfg_glintColor
+                    property bool volumetric: root.cfg_volumetric
+                    property bool glyphFlip: root.cfg_glyphFlip
+                    property int glyphRotation: root.cfg_glyphRotation
                 }
-            })
+            }
 
             Loader {
                 anchors.fill: parent

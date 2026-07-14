@@ -9,26 +9,26 @@ Window {
     color: "black"
 
     // Provide the expected environment
-    property var wallpaper: ({
-        configuration: {
-            numColumns: 80,
-            scalingMode: 1,
-            characterSize: 24,
-            animationSpeed: 1.0,
-            fallSpeed: 0.3,
-            cycleSpeed: 0.03,
-            raindropLength: 0.75,
-            slant: 0.0,
-            bloomSize: 0.4,
-            bloomStrength: 0.7,
-            cursorColor: "#2de500",
-            backgroundColor: "#000000",
-            glintColor: "#e7fecc",
-            volumetric: false,
-            glyphFlip: false,
-            glyphRotation: 0
+    property var wallpaper: QtObject {
+        property var configuration: QtObject {
+            property int numColumns: 80
+            property int scalingMode: 1
+            property int characterSize: 24
+            property real animationSpeed: 1.0
+            property real fallSpeed: 0.3
+            property real cycleSpeed: 0.03
+            property real raindropLength: 0.75
+            property real slant: 0.0
+            property real bloomSize: 0.4
+            property real bloomStrength: 0.7
+            property color cursorColor: "#2de500"
+            property color backgroundColor: "#000000"
+            property color glintColor: "#e7fecc"
+            property bool volumetric: false
+            property bool glyphFlip: false
+            property int glyphRotation: 0
         }
-    })
+    }
 
     Loader {
         anchors.fill: parent

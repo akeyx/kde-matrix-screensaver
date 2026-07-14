@@ -386,21 +386,6 @@ Rectangle {
     // Character set
     readonly property var charsList: ["モ", "エ", "ヤ", "キ", "オ", "カ", "7", "ケ", "サ", "ス", "z", "1", "5", "2", "ヨ", "タ", "ワ", "4", "ネ", "ヌ", "ナ", "9", "8", "ヒ", "0", "ホ", "ア", "3", "ウ", "セ", "ミ", "ラ", "リ", "ツ", "テ", "ニ", "ハ", "ソ", "コ", "シ", "マ", "ム", "メ"]
 
-    // Startup timer to populate colsArray
-    Timer {
-        id: initTimer
-        interval: 100
-        running: true
-        repeat: false
-        onTriggered: {
-            var temp = [];
-            for (var i = 0; i < columnsCount; i++) {
-                temp.push(columnsRepeater.itemAt(i));
-            }
-            root.colsArray = temp;
-        }
-    }
-
     // Simulation Timer running at 60 FPS
     Timer {
         id: simulationTimer
@@ -408,6 +393,18 @@ Rectangle {
         running: true
         repeat: true
         onTriggered: {
+            // Automatically rebuild the array if the grid size changes
+            if (columnsRepeater.count > 0 && columnsRepeater.count !== root.colsArray.length) {
+                var temp = [];
+                for (var i = 0; i < columnsRepeater.count; i++) {
+                    var item = columnsRepeater.itemAt(i);
+                    if (item) temp.push(item);
+                }
+                if (temp.length === columnsRepeater.count) {
+                    root.colsArray = temp;
+                }
+            }
+
             if (colsArray.length === 0) return;
 
             var now = Date.now();
