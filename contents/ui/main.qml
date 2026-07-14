@@ -81,23 +81,9 @@ Rectangle {
     property real baseHue: 0.3
     property real baseSat: 1.0
     
-    // Pre-calculated palette for massive performance gain
-    property var paletteCache: []
-    
     property color activeCursorColor: wallpaper.configuration.cursorColor || "#2de500"
-    onActiveCursorColorChanged: updatePalette()
-    
-    function updatePalette() {
-        var cache = []
-        for (var i = 0; i <= 100; i++) {
-            cache.push(getTrailColor(activeCursorColor, i / 100.0))
-        }
-        paletteCache = cache
-    }
-    
-    Component.onCompleted: {
-        updatePalette()
-    }
+    property real activeHue: activeCursorColor.hslHue
+    property real activeSat: activeCursorColor.hslSaturation
 
     // Stateless deterministic random float generator matching GLSL fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453)
     function randomFloat(x, y) {
@@ -195,7 +181,7 @@ Rectangle {
                             // The mathematically isolated leading cursor gets the exact WebGL yellow-green "electric" hue (0.242)!
                             // When this blooms, it spreads a slightly yellow-green tint around the brightest parts of the trail.
                             // The tail matches the WebGL palette mapping: pure matrix green (0.3 / 108 deg).
-                            color: isCursor ? (wallpaper.configuration.glintColor || "#e7fecc") : (paletteCache[Math.floor(adjustedBrightness * 100)] || Qt.hsla(root.baseHue, root.baseSat, Math.min(0.8, adjustedBrightness), 1.0))
+                            color: isCursor ? (wallpaper.configuration.glintColor || "#e7fecc") : Qt.hsla(root.activeHue, root.activeSat, Math.min(0.8, adjustedBrightness), 1.0)
                             
                             // Fade out opacity smoothly using native C++ math
                             opacity: isCursor ? 1.0 : adjustedBrightness * columnItem.zDepth
@@ -399,57 +385,6 @@ Rectangle {
 
     // Character set
     readonly property var charsList: ["モ", "エ", "ヤ", "キ", "オ", "カ", "7", "ケ", "サ", "ス", "z", "1", "5", "2", "ヨ", "タ", "ワ", "4", "ネ", "ヌ", "ナ", "9", "8", "ヒ", "0", "ホ", "ア", "3", "ウ", "セ", "ミ", "ラ", "リ", "ツ", "テ", "ニ", "ハ", "ソ", "コ", "シ", "マ", "ム", "メ"]
-
-    function hslToRgb(h, s, l) {
-        var r, g, b;
-        if (s === 0) {
-            r = g = b = l;
-        } else {
-            var hue2rgb = function(p, q, t) {
-                if (t < 0) t += 1;
-                if (t > 1) t -= 1;
-                if (t < 1/6) return p + (q - p) * 6 * t;
-                if (t < 1/2) return q;
-                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                return p;
-            };
-            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-            var p = 2 * l - q;
-            r = hue2rgb(p, q, h + 1/3);
-            g = hue2rgb(p, q, h);
-            b = hue2rgb(p, q, h - 1/3);
-        }
-        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-    }
-
-    function getTrailColor(c, brightness) {
-        var r = c.r;
-        var g = c.g;
-        var b_c = c.b;
-        var max = Math.max(r, g, b_c), min = Math.min(r, g, b_c);
-        var h, s, l = (max + min) / 2;
-
-        if (max === min) {
-            h = s = 0;
-        } else {
-            var d = max - min;
-            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-            switch (max) {
-                case r: h = (g - b_c) / d + (g < b_c ? 6 : 0); break;
-                case g: h = (b_c - r) / d + 2; break;
-                case b_c: h = (r - g) / d + 4; break;
-            }
-            h /= 6;
-        }
-
-        // Replicate WebGL's palette mapping: brightness dictates the color's Lightness (L)
-        // A brightness of 1.0 is neon green (L=0.45). Anything below 0.4 is pure black.
-        var trailL = Math.max(0.0, (brightness - 0.4) / 0.6 * 0.45);
-        var trailS = Math.max(s, 0.85);
-
-        var rgb = hslToRgb(h, trailS, trailL);
-        return Qt.rgba(rgb[0]/255, rgb[1]/255, rgb[2]/255, 1.0);
-    }
 
     // Startup timer to populate colsArray
     Timer {
