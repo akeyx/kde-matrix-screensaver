@@ -289,27 +289,28 @@ Item {
             visibility: Window.FullScreen
             color: "black"
 
-            // Proxy the config settings for main.qml (must be QtObject to preserve bindings)
-            property var wallpaper: QtObject {
-                property var configuration: QtObject {
-                    property int numColumns: root.cfg_numColumns
-                    property int scalingMode: root.cfg_scalingMode
-                    property int characterSize: root.cfg_characterSize
-                    property real animationSpeed: root.cfg_animationSpeed
-                    property real fallSpeed: root.cfg_fallSpeed
-                    property real cycleSpeed: root.cfg_cycleSpeed
-                    property real raindropLength: root.cfg_raindropLength
-                    property real slant: root.cfg_slant
-                    property real bloomSize: root.cfg_bloomSize
-                    property real bloomStrength: root.cfg_bloomStrength
-                    property color cursorColor: root.cfg_cursorColor
-                    property color backgroundColor: root.cfg_backgroundColor
-                    property color glintColor: root.cfg_glintColor
-                    property bool volumetric: root.cfg_volumetric
-                    property bool glyphFlip: root.cfg_glyphFlip
-                    property int glyphRotation: root.cfg_glyphRotation
-                }
-            }
+            // Proxy the config settings for main.qml.
+            // We define the properties directly on testWin because QML does not allow declaring new properties on inline objects.
+            property int numColumns: root.cfg_numColumns
+            property int scalingMode: root.cfg_scalingMode
+            property int characterSize: root.cfg_characterSize
+            property real animationSpeed: root.cfg_animationSpeed
+            property real fallSpeed: root.cfg_fallSpeed
+            property real cycleSpeed: root.cfg_cycleSpeed
+            property real raindropLength: root.cfg_raindropLength
+            property real slant: root.cfg_slant
+            property real bloomSize: root.cfg_bloomSize
+            property real bloomStrength: root.cfg_bloomStrength
+            property color cursorColor: root.cfg_cursorColor
+            property color backgroundColor: root.cfg_backgroundColor
+            property color glintColor: root.cfg_glintColor
+            property bool volumetric: root.cfg_volumetric
+            property bool glyphFlip: root.cfg_glyphFlip
+            property int glyphRotation: root.cfg_glyphRotation
+
+            property var wallpaper: ({
+                configuration: testWin
+            })
 
             Loader {
                 anchors.fill: parent
