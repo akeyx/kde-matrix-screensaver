@@ -5,7 +5,7 @@ Rectangle {
     id: root
     width: 1920
     height: 1080
-    color: "black"
+    color: wallpaper.configuration.backgroundColor || "#000000"
 
     // Recording control properties
     property bool recordingEnabled: false
@@ -84,13 +84,19 @@ Rectangle {
     // Pre-calculated palette for massive performance gain
     property var paletteCache: []
     
-    Component.onCompleted: {
+    property color activeCursorColor: wallpaper.configuration.cursorColor || "#c1ff75"
+    onActiveCursorColorChanged: updatePalette()
+    
+    function updatePalette() {
         var cache = []
-        var c = wallpaper.configuration.cursorColor || "#00ff00"
         for (var i = 0; i <= 100; i++) {
-            cache.push(getTrailColor(c, i / 100.0))
+            cache.push(getTrailColor(activeCursorColor, i / 100.0))
         }
         paletteCache = cache
+    }
+    
+    Component.onCompleted: {
+        updatePalette()
     }
 
     // Stateless deterministic random float generator matching GLSL fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453)
@@ -189,7 +195,7 @@ Rectangle {
                             // The mathematically isolated leading cursor gets the exact WebGL yellow-green "electric" hue (0.242)!
                             // When this blooms, it spreads a slightly yellow-green tint around the brightest parts of the trail.
                             // The tail matches the WebGL palette mapping: pure matrix green (0.3 / 108 deg).
-                            color: isCursor ? Qt.hsla(0.242, 1.0, 0.9, 1.0) : Qt.hsla(root.baseHue, root.baseSat, Math.min(0.8, adjustedBrightness), 1.0)
+                            color: isCursor ? (wallpaper.configuration.glintColor || "#ffffff") : (paletteCache[Math.floor(adjustedBrightness * 100)] || Qt.hsla(root.baseHue, root.baseSat, Math.min(0.8, adjustedBrightness), 1.0))
                             
                             // Fade out opacity smoothly using native C++ math
                             opacity: isCursor ? 1.0 : adjustedBrightness * columnItem.zDepth
@@ -287,7 +293,7 @@ Rectangle {
         id: downsampledBase
         sourceItem: squaredSource // Feed from the squared curve so bright spots bloom much more than fading trails
         hideSource: false
-        textureSize: Qt.size(Math.ceil(softBaseSource.width * 0.4), Math.ceil(softBaseSource.height * 0.4))
+        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width * Math.max(0.01, wallpaper.configuration.bloomSize !== undefined ? wallpaper.configuration.bloomSize : 0.4))), Math.max(1, Math.ceil(softBaseSource.height * Math.max(0.01, wallpaper.configuration.bloomSize !== undefined ? wallpaper.configuration.bloomSize : 0.4))))
         visible: false
     }
 

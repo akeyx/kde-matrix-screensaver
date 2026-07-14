@@ -9,9 +9,6 @@ Item {
     id: root
 
     // Define all config properties on the root item so KCM can bind them!
-    property string cfg_version: "classic"
-    property string cfg_font: "matrixcode"
-    property string cfg_effect: "palette"
     property int cfg_numColumns: 80
     property int cfg_scalingMode: 1
     property int cfg_characterSize: 24
@@ -22,27 +19,17 @@ Item {
     property double cfg_slant: 0.0
     property double cfg_bloomSize: 0.4
     property double cfg_bloomStrength: 0.7
-    property double cfg_ditherMagnitude: 0.05
-    property double cfg_resolution: 0.75
     property color cfg_cursorColor: "#c1ff75"
     property color cfg_backgroundColor: "#000000"
     property color cfg_glintColor: "#ffffff"
     property bool cfg_volumetric: false
     property bool cfg_glyphFlip: false
     property int cfg_glyphRotation: 0
-    property bool cfg_skipIntro: true
-    property bool cfg_suppressWarnings: true
-    property bool cfg_camera: false
-    property string cfg_stripeColors: ""
-    property string cfg_palette: ""
 
     // Helper for standalone translation fallback
     readonly property var translate: (typeof i18n !== 'undefined') ? i18n : function(x) { return x; }
 
     function resetToDefaults() {
-        cfg_version = "classic"
-        cfg_font = "matrixcode"
-        cfg_effect = "palette"
         cfg_numColumns = 80
         cfg_scalingMode = 1
         cfg_characterSize = 24
@@ -53,19 +40,12 @@ Item {
         cfg_slant = 0.0
         cfg_bloomSize = 0.4
         cfg_bloomStrength = 0.7
-        cfg_ditherMagnitude = 0.05
-        cfg_resolution = 0.75
         cfg_cursorColor = "#c1ff75"
         cfg_backgroundColor = "#000000"
         cfg_glintColor = "#ffffff"
         cfg_volumetric = false
         cfg_glyphFlip = false
         cfg_glyphRotation = 0
-        cfg_skipIntro = true
-        cfg_suppressWarnings = true
-        cfg_camera = false
-        cfg_stripeColors = ""
-        cfg_palette = ""
     }
 
     QQC2.ScrollView {
@@ -80,36 +60,6 @@ Item {
             Kirigami.FormLayout {
                 Layout.fillWidth: true
                 wideMode: true
-
-                // Category: Style & Theme
-                Kirigami.Separator {
-                    Kirigami.FormData.label: translate("Presets & Style")
-                    Layout.fillWidth: true
-                }
-
-                QQC2.ComboBox {
-                    id: versionCombo
-                    Kirigami.FormData.label: translate("Matrix Version:")
-                    model: ["classic", "3d", "megacity", "operator", "nightmare", "paradise", "resurrections", "trinity", "morpheus", "bugs", "palimpsest", "twilight", "holoplay"]
-                    currentIndex: Math.max(0, model.indexOf(root.cfg_version))
-                    onActivated: root.cfg_version = model[currentIndex]
-                }
-
-                QQC2.ComboBox {
-                    id: fontCombo
-                    Kirigami.FormData.label: translate("Glyph Font:")
-                    model: ["matrixcode", "resurrections", "gothic", "coptic", "huberfishA", "huberfishD", "gtarg_tenretniolleh", "gtarg_alientext", "neomatrixology"]
-                    currentIndex: Math.max(0, model.indexOf(root.cfg_font))
-                    onActivated: root.cfg_font = model[currentIndex]
-                }
-
-                QQC2.ComboBox {
-                    id: effectCombo
-                    Kirigami.FormData.label: translate("Color Effect:")
-                    model: ["palette", "none", "plain", "customStripes", "stripes", "pride", "transPride", "trans", "image", "mirror"]
-                    currentIndex: Math.max(0, model.indexOf(root.cfg_effect))
-                    onActivated: root.cfg_effect = model[currentIndex]
-                }
 
                 // Category: Simulation & Grid
                 Kirigami.Separator {
@@ -279,38 +229,6 @@ Item {
                     }
                 }
 
-                RowLayout {
-                    Kirigami.FormData.label: translate("Dither Magnitude:")
-                    QQC2.Slider {
-                        id: ditherSlider
-                        from: 0.0
-                        to: 0.5
-                        value: root.cfg_ditherMagnitude
-                        onMoved: root.cfg_ditherMagnitude = value
-                        Layout.fillWidth: true
-                    }
-                    QQC2.Label {
-                        text: ditherSlider.value.toFixed(3)
-                        Layout.preferredWidth: 40
-                    }
-                }
-
-                RowLayout {
-                    Kirigami.FormData.label: translate("Internal Resolution:")
-                    QQC2.Slider {
-                        id: resSlider
-                        from: 0.1
-                        to: 2.0
-                        value: root.cfg_resolution
-                        onMoved: root.cfg_resolution = value
-                        Layout.fillWidth: true
-                    }
-                    QQC2.Label {
-                        text: resSlider.value.toFixed(2)
-                        Layout.preferredWidth: 40
-                    }
-                }
-
                 // Category: Mode & Advanced
                 Kirigami.Separator {
                     Kirigami.FormData.label: translate("Special Modes & Advanced")
@@ -337,41 +255,6 @@ Item {
                     onActivated: root.cfg_glyphRotation = model[currentIndex]
                 }
 
-                QQC2.CheckBox {
-                    Kirigami.FormData.label: translate("Skip Start Intro:")
-                    checked: root.cfg_skipIntro
-                    onToggled: root.cfg_skipIntro = checked
-                }
-
-                QQC2.CheckBox {
-                    Kirigami.FormData.label: translate("Suppress WebGL Warnings:")
-                    checked: root.cfg_suppressWarnings
-                    onToggled: root.cfg_suppressWarnings = checked
-                }
-
-                QQC2.CheckBox {
-                    Kirigami.FormData.label: translate("Enable Webcam (for Mirror):")
-                    checked: root.cfg_camera
-                    onToggled: root.cfg_camera = checked
-                }
-
-                QQC2.TextField {
-                    id: stripeColorsText
-                    Kirigami.FormData.label: translate("Stripe Colors (R,G,B,...):")
-                    placeholderText: "e.g. 1,0,0,0,1,0,0,0,1"
-                    text: root.cfg_stripeColors
-                    onTextChanged: root.cfg_stripeColors = text
-                    Layout.fillWidth: true
-                }
-
-                QQC2.TextField {
-                    id: paletteText
-                    Kirigami.FormData.label: translate("Custom Palette (R,G,B,%,...):")
-                    placeholderText: "e.g. 0,1,0,0,0.5,1,0.5,0.5,1,1,1,1"
-                    text: root.cfg_palette
-                    onTextChanged: root.cfg_palette = text
-                    Layout.fillWidth: true
-                }
                 RowLayout {
                     Kirigami.FormData.label: translate("Actions:")
                     Layout.fillWidth: true
@@ -407,9 +290,6 @@ Item {
             // Proxy the config settings for main.qml
             property var wallpaper: ({
                 configuration: {
-                    version: root.cfg_version,
-                    font: root.cfg_font,
-                    effect: root.cfg_effect,
                     numColumns: root.cfg_numColumns,
                     scalingMode: root.cfg_scalingMode,
                     characterSize: root.cfg_characterSize,
@@ -420,19 +300,12 @@ Item {
                     slant: root.cfg_slant,
                     bloomSize: root.cfg_bloomSize,
                     bloomStrength: root.cfg_bloomStrength,
-                    ditherMagnitude: root.cfg_ditherMagnitude,
-                    resolution: root.cfg_resolution,
                     cursorColor: root.cfg_cursorColor,
                     backgroundColor: root.cfg_backgroundColor,
                     glintColor: root.cfg_glintColor,
                     volumetric: root.cfg_volumetric,
                     glyphFlip: root.cfg_glyphFlip,
-                    glyphRotation: root.cfg_glyphRotation,
-                    skipIntro: root.cfg_skipIntro,
-                    suppressWarnings: root.cfg_suppressWarnings,
-                    camera: root.cfg_camera,
-                    stripeColors: root.cfg_stripeColors,
-                    palette: root.cfg_palette
+                    glyphRotation: root.cfg_glyphRotation
                 }
             })
 
