@@ -84,7 +84,7 @@ Rectangle {
     // Pre-calculated palette for massive performance gain
     property var paletteCache: []
     
-    property color activeCursorColor: wallpaper.configuration.cursorColor || "#c1ff75"
+    property color activeCursorColor: wallpaper.configuration.cursorColor || "#2de500"
     onActiveCursorColorChanged: updatePalette()
     
     function updatePalette() {
@@ -195,7 +195,7 @@ Rectangle {
                             // The mathematically isolated leading cursor gets the exact WebGL yellow-green "electric" hue (0.242)!
                             // When this blooms, it spreads a slightly yellow-green tint around the brightest parts of the trail.
                             // The tail matches the WebGL palette mapping: pure matrix green (0.3 / 108 deg).
-                            color: isCursor ? (wallpaper.configuration.glintColor || "#ffffff") : (paletteCache[Math.floor(adjustedBrightness * 100)] || Qt.hsla(root.baseHue, root.baseSat, Math.min(0.8, adjustedBrightness), 1.0))
+                            color: isCursor ? (wallpaper.configuration.glintColor || "#e7fecc") : (paletteCache[Math.floor(adjustedBrightness * 100)] || Qt.hsla(root.baseHue, root.baseSat, Math.min(0.8, adjustedBrightness), 1.0))
                             
                             // Fade out opacity smoothly using native C++ math
                             opacity: isCursor ? 1.0 : adjustedBrightness * columnItem.zDepth

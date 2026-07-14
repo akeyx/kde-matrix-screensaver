@@ -19,9 +19,9 @@ Item {
     property double cfg_slant: 0.0
     property double cfg_bloomSize: 0.4
     property double cfg_bloomStrength: 0.7
-    property color cfg_cursorColor: "#c1ff75"
+    property color cfg_cursorColor: "#2de500"
     property color cfg_backgroundColor: "#000000"
-    property color cfg_glintColor: "#ffffff"
+    property color cfg_glintColor: "#e7fecc"
     property bool cfg_volumetric: false
     property bool cfg_glyphFlip: false
     property int cfg_glyphRotation: 0
@@ -40,9 +40,9 @@ Item {
         cfg_slant = 0.0
         cfg_bloomSize = 0.4
         cfg_bloomStrength = 0.7
-        cfg_cursorColor = "#c1ff75"
+        cfg_cursorColor = "#2de500"
         cfg_backgroundColor = "#000000"
-        cfg_glintColor = "#ffffff"
+        cfg_glintColor = "#e7fecc"
         cfg_volumetric = false
         cfg_glyphFlip = false
         cfg_glyphRotation = 0

@@ -36,13 +36,13 @@
             <default>0.7</default>
         </entry>
         <entry name="cursorColor" type="Color">
-            <default>#c1ff75</default>
+            <default>#2de500</default>
         </entry>
         <entry name="backgroundColor" type="Color">
             <default>#000000</default>
         </entry>
         <entry name="glintColor" type="Color">
-            <default>#ffffff</default>
+            <default>#e7fecc</default>
         </entry>
         <entry name="volumetric" type="Bool">
             <default>false</default>
