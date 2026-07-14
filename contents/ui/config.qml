@@ -39,6 +39,35 @@ Item {
     // Helper for standalone translation fallback
     readonly property var translate: (typeof i18n !== 'undefined') ? i18n : function(x) { return x; }
 
+    function resetToDefaults() {
+        cfg_version = "classic"
+        cfg_font = "matrixcode"
+        cfg_effect = "palette"
+        cfg_numColumns = 80
+        cfg_scalingMode = 1
+        cfg_characterSize = 24
+        cfg_animationSpeed = 1.0
+        cfg_fallSpeed = 0.3
+        cfg_cycleSpeed = 0.03
+        cfg_raindropLength = 0.75
+        cfg_slant = 0.0
+        cfg_bloomSize = 0.4
+        cfg_bloomStrength = 0.7
+        cfg_ditherMagnitude = 0.05
+        cfg_resolution = 0.75
+        cfg_cursorColor = "#c1ff75"
+        cfg_backgroundColor = "#000000"
+        cfg_glintColor = "#ffffff"
+        cfg_volumetric = false
+        cfg_glyphFlip = false
+        cfg_glyphRotation = 0
+        cfg_skipIntro = true
+        cfg_suppressWarnings = true
+        cfg_camera = false
+        cfg_stripeColors = ""
+        cfg_palette = ""
+    }
+
     QQC2.ScrollView {
         id: scrollView
         anchors.fill: parent
@@ -343,12 +372,24 @@ Item {
                     onTextChanged: root.cfg_palette = text
                     Layout.fillWidth: true
                 }
-                QQC2.Button {
-                    Kirigami.FormData.label: translate("Test Screensaver:")
-                    text: translate("Launch Fullscreen Preview")
-                    icon.name: "media-playback-start"
-                    onClicked: {
-                        testWindowComponent.createObject(root)
+                RowLayout {
+                    Kirigami.FormData.label: translate("Actions:")
+                    Layout.fillWidth: true
+
+                    QQC2.Button {
+                        text: translate("Reset to Defaults")
+                        icon.name: "edit-undo"
+                        onClicked: {
+                            root.resetToDefaults()
+                        }
+                    }
+
+                    QQC2.Button {
+                        text: translate("Launch Fullscreen Preview")
+                        icon.name: "media-playback-start"
+                        onClicked: {
+                            testWindowComponent.createObject(root)
+                        }
                     }
                 }
             }
