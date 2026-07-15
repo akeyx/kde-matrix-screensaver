@@ -53,13 +53,18 @@ void main() {
 
     float columnTime = columnTimeOffset + simTime * fallSpeed * columnSpeedOffset;
     float rawRainTime = (webglY * 0.01 + columnTime) / raindropLength;
-
+    
+    // wobble logic from WebGL
+    float SQRT_2 = 1.4142135623730951;
+    float SQRT_5 = 2.23606797749979;
     float w = rawRainTime;
-    if (loops <= 0 && slant != 0.0) {
-        w = rawRainTime + sin(rawRainTime * 3.14159265359) * slant;
+    if (loops <= 0) {
+        w = rawRainTime + 0.3 * sin(SQRT_2 * rawRainTime) + 0.2 * sin(SQRT_5 * rawRainTime);
     }
+
     float rawBrightness = 1.0 - fract(w);
     float adjustedBrightness = max(0.0, rawBrightness * 1.1 - 0.5);
+    float visualBrightness = clamp(pow(adjustedBrightness, 0.6) * 1.5, 0.0, 1.0);
 
     // In WebGL, the cursor is the bottom-most pixel where it wraps around.
     bool isCursor = rawBrightness > 0.95;
@@ -68,7 +73,7 @@ void main() {
     if (isCursor) {
         finalColor = glintColor;
     } else {
-        finalColor.rgb = baseColor.rgb * (adjustedBrightness * zDepth);
+        finalColor.rgb = baseColor.rgb * (visualBrightness * zDepth);
         finalColor.a = 1.0;
     }
 
