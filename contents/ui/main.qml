@@ -174,11 +174,11 @@ Rectangle {
 
                         readonly property double textSeed2Base: {
                             var x = Math.sin(columnItem.colIndex * 12.9898 + (index + 1000) * 78.233) * 43758.5453;
-                            return index + Math.floor(x - Math.floor(x));
+                            return index + (x - Math.floor(x));
                         }
                         
-                        // Generate a unique starting offset so cells cycle completely independently!
-                        readonly property int cycleOffset: Math.floor((textSeed2Base - Math.floor(textSeed2Base)) * 1000.0)
+                        // Generate a unique starting phase offset between 0.0 and 1.0
+                        readonly property double cycleOffset: textSeed2Base - Math.floor(textSeed2Base)
                         
                         // Only emits a change when the floored integer increments (about 1.8 times a second per cell)
                         // Because each cell has a unique cycleOffset, text updates are spread smoothly across all frames
