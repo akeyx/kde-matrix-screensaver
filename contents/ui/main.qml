@@ -274,12 +274,14 @@ Rectangle {
         visible: false
     }
 
+    property real bloomScale: Math.max(0.01, activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4) / 0.4
+
     // 3. Downsampled Massive Bloom (fed ONLY by the high-pass mask)
     ShaderEffectSource {
         id: downsampledHighPass
         sourceItem: squaredSource
         hideSource: false
-        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width * Math.max(0.01, (activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4) * 0.625))), Math.max(1, Math.ceil(softBaseSource.height * Math.max(0.01, (activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4) * 0.625))))
+        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width / 4)), Math.max(1, Math.ceil(softBaseSource.height / 4)))
         visible: false
     }
 
@@ -287,7 +289,7 @@ Rectangle {
         id: massiveBloom
         anchors.fill: softBaseSource
         source: downsampledHighPass
-        radius: 32 // Effective radius 128
+        radius: 32 * root.bloomScale // Effective radius 128
         visible: false
     }
 
@@ -302,12 +304,12 @@ Rectangle {
     }
 
     // 4. Standard Gaussian Bloom Pyramid (for the soft wide halos on the regular trails)
-    // Downsample the high-pass base to 40% to exactly match WebGL's "bloomSize: 0.4"
+    // Downsample the high-pass base to 25% for stability and scale radius instead
     ShaderEffectSource {
         id: downsampledBase
         sourceItem: squaredSource // Feed from the squared curve so bright spots bloom much more than fading trails
         hideSource: false
-        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width * Math.max(0.01, activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4))), Math.max(1, Math.ceil(softBaseSource.height * Math.max(0.01, activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4))))
+        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width / 4)), Math.max(1, Math.ceil(softBaseSource.height / 4)))
         visible: false
     }
 
@@ -315,7 +317,7 @@ Rectangle {
         id: outerBloom
         anchors.fill: softBaseSource
         source: downsampledBase
-        radius: 64 // Effective 160
+        radius: 64 * root.bloomScale // Effective 256
         visible: false
     }
 
@@ -323,7 +325,7 @@ Rectangle {
         id: midBloom
         anchors.fill: softBaseSource
         source: downsampledBase
-        radius: 24 // Effective 60
+        radius: 24 * root.bloomScale // Effective 96
         visible: false
     }
 
@@ -331,7 +333,7 @@ Rectangle {
         id: innerBloom
         anchors.fill: softBaseSource
         source: downsampledBase
-        radius: 8 // Effective 20
+        radius: 8 * root.bloomScale // Effective 32
         visible: false
     }
 
@@ -373,37 +375,25 @@ Rectangle {
         visible: false
     }
     
-    ShaderEffectSource {
-        id: combinedBloomSource
-        sourceItem: combinedBloom
-        hideSource: true
-        anchors.fill: combinedBloom
-        visible: false
-    }
-
-    // Apply bloomStrength by multiplying the bloom RGB channels
-    Rectangle {
-        id: bloomStrengthRect
+    // Apply bloomStrength using standard QML rendering opacity to scale RGB and Alpha perfectly
+    Item {
+        id: bloomStrengthContainer
         anchors.fill: softBaseSource
-        property real strength: activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7
-        color: Qt.rgba(strength, strength, strength, 1.0)
+        opacity: activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7
         visible: false
-    }
 
-    Blend {
-        id: dimmedBloom
-        anchors.fill: softBaseSource
-        source: combinedBloomSource
-        foregroundSource: bloomStrengthRect
-        mode: "multiply"
-        visible: false
+        ShaderEffectSource {
+            anchors.fill: parent
+            sourceItem: combinedBloom
+            hideSource: true
+        }
     }
 
     ShaderEffectSource {
         id: dimmedBloomSource
-        sourceItem: dimmedBloom
+        sourceItem: bloomStrengthContainer
         hideSource: true
-        anchors.fill: dimmedBloom
+        anchors.fill: bloomStrengthContainer
         visible: false
     }
 
