@@ -44,19 +44,10 @@ Rectangle {
         palette: ""
     })
 
-    readonly property var activeConfig: {
-        if (testProxyConfig) return testProxyConfig;
-        // Direct property injection on root item (Plasma 6 screenlockers)
-        if (configuration && configuration.characterSize !== undefined) return configuration;
-        // Direct context property (sometimes used in other Plasma shells)
-        if (typeof configuration !== 'undefined' && configuration && configuration.characterSize !== undefined) return configuration;
-        // Standard global wallpaper object
-        if (typeof wallpaper !== 'undefined' && wallpaper) {
-            if (wallpaper.configuration) return wallpaper.configuration;
-            if (wallpaper.characterSize !== undefined) return wallpaper;
-        }
-        return defaultConfig;
-    }
+    property var activeConfig: root.testProxyConfig ? root.testProxyConfig : 
+                               (root.configuration && root.configuration.characterSize !== undefined ? root.configuration : 
+                               (root.wallpaper && root.wallpaper.configuration ? root.wallpaper.configuration : 
+                               (root.wallpaper && root.wallpaper.characterSize !== undefined ? root.wallpaper : root.defaultConfig)))
 
     FontLoader {
         id: matrixFont
@@ -259,33 +250,23 @@ Rectangle {
     // 2. High-Pass Filter: Multiply the screen by itself once (squared curve) 
     // This perfectly isolates the pure white cursors and extreme neon green spots, 
     // suppressing the dark green trails so they don't emit muddy fog.
-    ShaderEffectSource {
-        id: dummyHider
-        sourceItem: rainColoredSource
-        hideSource: true
-        anchors.fill: rainColoredSource
-        opacity: 0.0 // Hide rainColoredSource from drawing naturally, while preserving its opacity for Blend!
-    }
+
 
     Item {
         id: squaredContainer
         anchors.fill: rainColoredSource
-        Blend {
+        ShaderEffect {
             anchors.fill: parent
-            source: rainColoredSource
-            foregroundSource: rainColoredSource
-            mode: "multiply"
+            property variant sourceTex: rainColoredSource
+            fragmentShader: "squared.frag.qsb"
         }
     }
 
     ShaderEffectSource {
         id: squaredSource
         sourceItem: squaredContainer
-        hideSource: true
         anchors.fill: squaredContainer
         visible: false
-        // Downsample by 4x to massively increase the effective blur radius (up to 256px equivalent)
-        textureSize: Qt.size(Math.max(1, squaredContainer.width / 4), Math.max(1, squaredContainer.height / 4))
     }
 
     // Define properties updated explicitly every frame to bypass QML var binding bugs
@@ -305,20 +286,36 @@ Rectangle {
         visible: false
     }
 
+    ShaderEffectSource {
+        id: blurCoreSource
+        sourceItem: blurCore
+        anchors.fill: blurCore
+        visible: false
+    }
+
+    // Soft glow (downscaled container to exceed 64px FastBlur limit)
+    ShaderEffectSource {
+        id: downsampledSource
+        sourceItem: squaredContainer
+        width: Math.max(1, root.width / 4)
+        height: Math.max(1, root.height / 4)
+        sourceRect: Qt.rect(0, 0, root.width, root.height)
+        visible: false
+    }
+
     FastBlur {
         id: blurGlow
-        anchors.fill: parent
-        source: squaredSource
-        radius: Math.min(64, Math.max(1, 64 * root.bloomRadiusMultiplier))
+        anchors.fill: downsampledSource
+        source: downsampledSource
+        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
         transparentBorder: true
         visible: false
     }
 
-    ColorOverlay {
-        id: tintedGlow
-        anchors.fill: parent
-        source: blurGlow
-        color: activeConfig.glintColor || "#e7fecc"
+    ShaderEffectSource {
+        id: blurGlowSource
+        sourceItem: blurGlow
+        anchors.fill: blurGlow
         visible: false
     }
 
@@ -326,9 +323,10 @@ Rectangle {
         id: finalComposite
         anchors.fill: parent
         property variant primaryTex: rainColoredSource
-        property variant blurCoreTex: blurCore
-        property variant tintedGlowTex: tintedGlow
+        property variant blurCoreTex: blurCoreSource
+        property variant blurGlowTex: blurGlowSource
         property real bloomStrength: root.currentBloomStrength
+        property color glintColor: activeConfig.glintColor || "#e7fecc"
 
         fragmentShader: "compose.frag.qsb"
     }
@@ -389,7 +387,7 @@ Rectangle {
             root.currentBloomStrength = activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.1;
             root.bloomScale = Math.max(0.01, root.currentBloomSize) / 0.4;
             root.bloomDownsample = 4.0;
-            root.bloomRadiusMultiplier = root.bloomScale > 1.0 ? 1.0 : root.bloomScale;
+            root.bloomRadiusMultiplier = root.bloomScale;
 
             if (columnsRepeater.count > 0 && columnsRepeater.count !== root.colsArray.length) {
                 var temp = [];
@@ -421,6 +419,5 @@ Rectangle {
             });
         }
     }
-
 
 }
