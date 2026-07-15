@@ -8,6 +8,13 @@ import org.kde.kquickcontrols 2.0 as KQuickControls
 Item {
     id: root
 
+    // Provide a themed background so it doesn't render as solid white when tested via raw qml-qt6
+    Rectangle {
+        anchors.fill: parent
+        color: Kirigami.Theme.backgroundColor
+        z: -1
+    }
+
     // Define all config properties on the root item so KCM can bind them!
     property int cfg_numColumns: 80
     property int cfg_scalingMode: 1
