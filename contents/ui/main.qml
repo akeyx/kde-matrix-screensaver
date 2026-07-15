@@ -23,7 +23,7 @@ Rectangle {
         font: "matrixcode",
         effect: "palette",
         scalingMode: 1,
-        characterSize: 24,
+        characterSize: 40,
         numColumns: 80,
         animationSpeed: 1.0,
         fallSpeed: 0.3,
@@ -70,7 +70,7 @@ Rectangle {
     readonly property int columnsCount: {
         if (activeConfig.scalingMode === 1) {
             // Fixed Character Size (Auto-fill columns based on screen width)
-            return Math.max(1, Math.floor(width / (activeConfig.characterSize !== undefined ? activeConfig.characterSize : 24)))
+            return Math.max(1, Math.floor(width / (activeConfig.characterSize !== undefined ? activeConfig.characterSize : 40)))
         } else {
             // Fixed Number of Columns
             return activeConfig.numColumns !== undefined ? activeConfig.numColumns : 80

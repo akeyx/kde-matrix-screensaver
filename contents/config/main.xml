@@ -12,7 +12,7 @@
             <default>1</default>
         </entry>
         <entry name="characterSize" type="Int">
-            <default>24</default>
+            <default>40</default>
         </entry>
         <entry name="animationSpeed" type="Double">
             <default>1.0</default>

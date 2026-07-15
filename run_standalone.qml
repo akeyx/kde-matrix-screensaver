@@ -12,7 +12,7 @@ Window {
     // Provide the expected environment
     property int numColumns: 80
     property int scalingMode: 1
-    property int characterSize: 24
+    property int characterSize: 40
     property real animationSpeed: 1.0
     property real fallSpeed: 0.3
     property real cycleSpeed: 0.03
@@ -41,7 +41,7 @@ Window {
                 font: "matrixcode",
                 effect: "palette",
                 scalingMode: 1,
-                characterSize: 24,
+                characterSize: 40,
                 numColumns: 80,
                 animationSpeed: 1.0,
                 fallSpeed: 0.3,
