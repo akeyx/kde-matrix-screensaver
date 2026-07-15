@@ -64,17 +64,30 @@ void main() {
 
     float rawBrightness = 1.0 - fract(w);
     float adjustedBrightness = max(0.0, rawBrightness * 1.1 - 0.5);
-    float visualBrightness = clamp(pow(adjustedBrightness, 0.6) * 1.5, 0.0, 1.0);
+    float visualBrightness = clamp(adjustedBrightness * 1.7, 0.0, 1.0);
 
-    // In WebGL, the cursor is the bottom-most pixel where it wraps around.
-    bool isCursor = rawBrightness > 0.95;
+    // To find the exact cursor, we calculate the brightness of the cell below us
+    float yRatioBelow = (rowIndex + 1.0) * cellHeightRatio;
+    float webglYBelow = (1.0 - yRatioBelow) * 80.0;
+    float rawRainTimeBelow = (webglYBelow * 0.01 + columnTime) / raindropLength;
+    float wBelow = rawRainTimeBelow;
+    if (loops <= 0) {
+        wBelow = rawRainTimeBelow + 0.3 * sin(SQRT_2 * rawRainTimeBelow) + 0.2 * sin(SQRT_5 * rawRainTimeBelow);
+    }
+    float brightnessBelow = 1.0 - fract(wBelow);
+    
+    // The cursor is exactly where the brightness wraps around (current cell is bright, cell below is dark)
+    bool isCursor = rawBrightness > brightnessBelow;
 
     vec4 finalColor = vec4(0.0);
     if (isCursor) {
         finalColor = glintColor;
+        // ensure premultiplied alpha
+        finalColor.rgb *= finalColor.a;
     } else {
+        // Fix: Use visualBrightness as alpha to prevent black boxes occluding the background
+        finalColor.a = visualBrightness;
         finalColor.rgb = baseColor.rgb * (visualBrightness * zDepth);
-        finalColor.a = 1.0;
     }
 
     // Multiply by the white mask from the blur (acts as alpha coverage)
