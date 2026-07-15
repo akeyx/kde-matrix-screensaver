@@ -300,12 +300,36 @@ Rectangle {
         visible: false
     }
 
-    // Double the massive bloom intensity to make the cursors violently glow
+    // Multiply the massive bloom intensity by 16x to counteract FastBlur diffusion
     Blend {
-        id: intenseMassiveBloom
+        id: massiveBoost1
         anchors.fill: softBaseSource
         source: massiveBloom
         foregroundSource: massiveBloom
+        mode: "addition"
+        visible: false
+    }
+    Blend {
+        id: massiveBoost2
+        anchors.fill: softBaseSource
+        source: massiveBoost1
+        foregroundSource: massiveBoost1
+        mode: "addition"
+        visible: false
+    }
+    Blend {
+        id: massiveBoost3
+        anchors.fill: softBaseSource
+        source: massiveBoost2
+        foregroundSource: massiveBoost2
+        mode: "addition"
+        visible: false
+    }
+    Blend {
+        id: intenseMassiveBloom
+        anchors.fill: softBaseSource
+        source: massiveBoost3
+        foregroundSource: massiveBoost3
         mode: "addition"
         visible: false
     }
@@ -352,12 +376,28 @@ Rectangle {
         visible: false
     }
 
-    // Double the intensity of the standard background trail bloom
+    // Multiply the trail bloom intensity by 8x
     Blend {
-        id: intenseTrailBloom
+        id: trailBoost1
         anchors.fill: softBaseSource
         source: standardTrailBloom
         foregroundSource: standardTrailBloom
+        mode: "addition"
+        visible: false
+    }
+    Blend {
+        id: trailBoost2
+        anchors.fill: softBaseSource
+        source: trailBoost1
+        foregroundSource: trailBoost1
+        mode: "addition"
+        visible: false
+    }
+    Blend {
+        id: intenseTrailBloom
+        anchors.fill: softBaseSource
+        source: trailBoost2
+        foregroundSource: trailBoost2
         mode: "addition"
         visible: false
     }

@@ -1,37 +1,53 @@
 import QtQuick 2.15
-import Qt5Compat.GraphicalEffects
+import QtQuick.Window 2.15
 
-Rectangle {
-    width: 200; height: 200
+Window {
+    id: root
+    width: 1280
+    height: 720
+    visible: true
     color: "black"
 
-    property real testVal: 0.1
-    NumberAnimation on testVal {
-        from: 0.1
-        to: 1.0
-        duration: 2000
-        loops: Animation.Infinite
+    property real bloomSizeParam: 1.0
+    property real bloomStrengthParam: 1.0
+
+    Loader {
+        anchors.fill: parent
+        source: "contents/ui/main.qml"
+        onLoaded: {
+            item.recordingEnabled = false;
+            item.testProxyConfig = {
+                version: "classic",
+                font: "matrixcode",
+                effect: "palette",
+                scalingMode: 1,
+                characterSize: 24,
+                numColumns: 80,
+                animationSpeed: 1.0,
+                fallSpeed: 0.3,
+                cycleSpeed: 0.03,
+                raindropLength: 0.75,
+                slant: 0.0,
+                bloomSize: root.bloomSizeParam,
+                bloomStrength: root.bloomStrengthParam,
+                cursorColor: "#2de500",
+                backgroundColor: "#000000",
+                glintColor: "#e7fecc",
+                volumetric: false,
+                glyphFlip: false,
+                glyphRotation: 0
+            };
+        }
     }
 
-    Rectangle {
-        id: sourceRect
-        width: 100; height: 100
-        anchors.centerIn: parent
-        color: "red"
-        visible: false
-    }
-
-    Rectangle {
-        id: mask
-        anchors.fill: sourceRect
-        color: Qt.rgba(0, 0, 0, testVal)
-        visible: false
-        onColorChanged: console.log("Color changed to " + color)
-    }
-
-    OpacityMask {
-        anchors.fill: sourceRect
-        source: sourceRect
-        maskSource: mask
+    Timer {
+        interval: 1500
+        running: true
+        onTriggered: {
+            root.contentItem.grabToImage(function(result) {
+                result.saveToFile("screenshot_" + root.bloomSizeParam + "_" + root.bloomStrengthParam + ".png");
+                Qt.quit();
+            });
+        }
     }
 }
