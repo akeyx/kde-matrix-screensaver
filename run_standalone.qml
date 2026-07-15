@@ -34,6 +34,8 @@ Window {
     Loader {
         anchors.fill: parent
         source: "contents/ui/main.qml"
-        onLoaded: item.testProxyConfig = wallpaper.configuration
+        onLoaded: {
+            console.log(typeof nonExistentVariable);
+        }
     }
 }

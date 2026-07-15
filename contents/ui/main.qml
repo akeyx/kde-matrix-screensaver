@@ -15,8 +15,10 @@ Rectangle {
     property double simTime: 0.0
     property double lastTime: Date.now()
 
+    // Plasma 6 injects the configuration into this property on the root item
+    property var configuration: null
     property var testProxyConfig: null
-    readonly property var activeConfig: testProxyConfig ? testProxyConfig : (typeof wallpaper !== 'undefined' ? wallpaper.configuration : {
+    readonly property var defaultConfig: ({
         version: "classic",
         font: "matrixcode",
         effect: "palette",
@@ -44,6 +46,20 @@ Rectangle {
         stripeColors: "",
         palette: ""
     })
+
+    readonly property var activeConfig: {
+        if (testProxyConfig) return testProxyConfig;
+        // Direct property injection on root item (Plasma 6 screenlockers)
+        if (configuration && configuration.characterSize !== undefined) return configuration;
+        // Direct context property (sometimes used in other Plasma shells)
+        if (typeof configuration !== 'undefined' && configuration && configuration.characterSize !== undefined) return configuration;
+        // Standard global wallpaper object
+        if (typeof wallpaper !== 'undefined' && wallpaper) {
+            if (wallpaper.configuration) return wallpaper.configuration;
+            if (wallpaper.characterSize !== undefined) return wallpaper;
+        }
+        return defaultConfig;
+    }
 
     FontLoader {
         id: matrixFont
