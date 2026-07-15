@@ -279,7 +279,7 @@ Rectangle {
         id: downsampledHighPass
         sourceItem: squaredSource
         hideSource: false
-        textureSize: Qt.size(Math.ceil(softBaseSource.width / 4), Math.ceil(softBaseSource.height / 4))
+        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width * Math.max(0.01, (activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4) * 0.625))), Math.max(1, Math.ceil(softBaseSource.height * Math.max(0.01, (activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4) * 0.625))))
         visible: false
     }
 
@@ -381,19 +381,21 @@ Rectangle {
         visible: false
     }
 
-    // Apply bloomStrength by masking the alpha of the combined bloom
+    // Apply bloomStrength by multiplying the bloom RGB channels
     Rectangle {
-        id: bloomStrengthMask
+        id: bloomStrengthRect
         anchors.fill: softBaseSource
-        color: Qt.rgba(0, 0, 0, activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7)
+        property real strength: activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7
+        color: Qt.rgba(strength, strength, strength, 1.0)
         visible: false
     }
 
-    OpacityMask {
+    Blend {
         id: dimmedBloom
         anchors.fill: softBaseSource
         source: combinedBloomSource
-        maskSource: bloomStrengthMask
+        foregroundSource: bloomStrengthRect
+        mode: "multiply"
         visible: false
     }
 
