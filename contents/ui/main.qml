@@ -281,11 +281,13 @@ Rectangle {
     property real bloomDownsample: 4.0
     property real bloomRadiusMultiplier: 1.0
 
-    // 3. Downsampled Massive Bloom (fed ONLY by the high-pass mask)
+    // 3 & 4. Downsampled Base for all Bloom Passes
+    // Using a single ShaderEffectSource guarantees Qt6 RHI populates the texture correctly
     ShaderEffectSource {
-        id: downsampledHighPass
+        id: bloomSource
         sourceItem: squaredSource
         hideSource: false
+        live: true
         textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width / root.bloomDownsample)), Math.max(1, Math.ceil(softBaseSource.height / root.bloomDownsample)))
         visible: false
     }
@@ -293,7 +295,7 @@ Rectangle {
     FastBlur {
         id: massiveBloom
         anchors.fill: softBaseSource
-        source: downsampledHighPass
+        source: bloomSource
         radius: 32 * root.bloomRadiusMultiplier
         visible: false
     }
@@ -308,19 +310,10 @@ Rectangle {
         visible: false
     }
 
-    // 4. Standard Gaussian Bloom Pyramid (for the soft wide halos on the regular trails)
-    ShaderEffectSource {
-        id: downsampledBase
-        sourceItem: squaredSource // Feed from the squared curve so bright spots bloom much more than fading trails
-        hideSource: false
-        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width / root.bloomDownsample)), Math.max(1, Math.ceil(softBaseSource.height / root.bloomDownsample)))
-        visible: false
-    }
-
     FastBlur {
         id: outerBloom
         anchors.fill: softBaseSource
-        source: downsampledBase
+        source: bloomSource
         radius: 64 * root.bloomRadiusMultiplier
         visible: false
     }
@@ -328,7 +321,7 @@ Rectangle {
     FastBlur {
         id: midBloom
         anchors.fill: softBaseSource
-        source: downsampledBase
+        source: bloomSource
         radius: 24 * root.bloomRadiusMultiplier
         visible: false
     }
@@ -336,7 +329,7 @@ Rectangle {
     FastBlur {
         id: innerBloom
         anchors.fill: softBaseSource
-        source: downsampledBase
+        source: bloomSource
         radius: 8 * root.bloomRadiusMultiplier
         visible: false
     }
@@ -380,19 +373,13 @@ Rectangle {
     }
     
     // Apply bloomStrength by multiplying the bloom RGB channels
-    Rectangle {
-        id: bloomStrengthRect
-        anchors.fill: softBaseSource
-        color: Qt.rgba(root.currentBloomStrength, root.currentBloomStrength, root.currentBloomStrength, 1.0)
-        visible: false
-    }
-
-    Blend {
+    // Apply bloomStrength directly by darkening the RGB channels via BrightnessContrast.
+    // This is 100% robust in Qt6 RHI (unlike blending a hidden raw Rectangle).
+    BrightnessContrast {
         id: dimmedBloom
         anchors.fill: softBaseSource
         source: combinedBloom
-        foregroundSource: bloomStrengthRect
-        mode: "multiply"
+        brightness: root.currentBloomStrength - 1.0
         visible: false
     }
 
