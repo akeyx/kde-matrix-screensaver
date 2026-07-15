@@ -285,7 +285,7 @@ Rectangle {
     // Using a single ShaderEffectSource guarantees Qt6 RHI populates the texture correctly
     ShaderEffectSource {
         id: bloomSource
-        sourceItem: squaredSource
+        sourceItem: softBaseSource
         hideSource: false
         live: true
         textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width / root.bloomDownsample)), Math.max(1, Math.ceil(softBaseSource.height / root.bloomDownsample)))
