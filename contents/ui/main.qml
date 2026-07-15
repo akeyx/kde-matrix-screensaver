@@ -28,7 +28,7 @@ Rectangle {
         raindropLength: 0.75,
         slant: 0.0,
         bloomSize: 0.4,
-        bloomStrength: 0.1,
+        bloomStrength: 0.7,
         ditherMagnitude: 0.05,
         resolution: 0.75,
         cursorColor: "#c1ff75",
@@ -384,7 +384,7 @@ Rectangle {
         repeat: true
         onTriggered: {
             root.currentBloomSize = activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4;
-            root.currentBloomStrength = activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.1;
+            root.currentBloomStrength = activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7;
             root.bloomScale = Math.max(0.01, root.currentBloomSize) / 0.4;
             root.bloomDownsample = 4.0;
             root.bloomRadiusMultiplier = root.bloomScale;

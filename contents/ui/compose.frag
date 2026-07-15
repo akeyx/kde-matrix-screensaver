@@ -7,19 +7,22 @@ layout(std140, binding = 0) uniform buf {
     mat4 qt_Matrix;
     float qt_Opacity;
     float bloomStrength;
+    vec4 glintColor;
 };
 
 layout(binding = 1) uniform sampler2D primaryTex;
 layout(binding = 2) uniform sampler2D blurCoreTex;
-layout(binding = 3) uniform sampler2D tintedGlowTex;
+layout(binding = 3) uniform sampler2D blurGlowTex;
 
 void main() {
     vec4 primary = texture(primaryTex, qt_TexCoord0);
     vec4 core = texture(blurCoreTex, qt_TexCoord0);
-    vec4 glow = texture(tintedGlowTex, qt_TexCoord0);
+    vec4 glow = texture(blurGlowTex, qt_TexCoord0);
+    glow.rgb *= glintColor.rgb;
+    glow.a *= glintColor.a;
 
-    // Additive blend for the two bloom components
-    vec4 combinedBloom = min(core + glow, vec4(1.0));
+    // Additive blend for the two bloom components, boosted for stronger impact
+    vec4 combinedBloom = min((core + glow) * 2.5, vec4(1.0));
 
     // Scale bloom by bloomStrength
     combinedBloom *= bloomStrength;
