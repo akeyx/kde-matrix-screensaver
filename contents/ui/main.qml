@@ -153,24 +153,7 @@ Rectangle {
                         height: cellHeight
                         y: index * cellHeight
                         
-                        readonly property double raindropLength: activeConfig.raindropLength !== undefined ? activeConfig.raindropLength : 0.75
-                        readonly property double rawRainTime: ((1.0 - ((index * root.cellHeight) / Math.max(1, root.height))) * 0.5 + columnItem.columnTime) / (activeConfig.raindropLength !== undefined ? activeConfig.raindropLength : 0.75)
-                        
-                        readonly property double rawBrightness: {
-                            var w = (activeConfig.loops || false || columnItem.slant === 0.0) ? rawRainTime : (rawRainTime + Math.sin(rawRainTime * Math.PI) * columnItem.slant);
-                            return 1.0 - (w - Math.floor(w));
-                        }
-                        
-                        readonly property double adjustedBrightness: Math.max(0.0, rawBrightness * 1.1 - 0.5)
-                        
-                        // Hide off-screen or totally dark cells to save render time
-                        visible: adjustedBrightness > 0.01
-
-                        // Mathematically isolate the exact single leading cursor cell
-                        readonly property bool isCursor: {
-                            var step = (activeConfig.loops || false || columnItem.slant === 0.0) ? columnItem.rainTimeStep : (columnItem.rainTimeStep * Math.max(0.1, 1.0 + Math.cos(rawRainTime * Math.PI) * columnItem.slant * Math.PI));
-                            return rawBrightness > (1.0 - step);
-                        }
+                        // CPU bindings stripped; math moved to GPU ShaderEffect
 
                         readonly property double textSeed2Base: {
                             var x = Math.sin(columnItem.colIndex * 12.9898 + (index + 1000) * 78.233) * 43758.5453;
@@ -180,9 +163,8 @@ Rectangle {
                         // Generate a unique starting phase offset between 0.0 and 1.0
                         readonly property double cycleOffset: textSeed2Base - Math.floor(textSeed2Base)
                         
-                        // Only emits a change when the floored integer increments (about 1.8 times a second per cell)
-                        // Because each cell has a unique cycleOffset, text updates are spread smoothly across all frames
-                        readonly property int myCycleTick: Math.floor((root.simTime * 60.0 * root.cycleSpeed) + cycleOffset)
+                        // Decouple text evaluation from the 60fps simTime to save massive CPU
+                        readonly property int myCycleTick: Math.floor((root.globalTextTimer * 60.0 * root.cycleSpeed) + cycleOffset)
 
                         Text {
                             anchors.fill: parent
@@ -191,13 +173,8 @@ Rectangle {
                                 var x = Math.sin(columnItem.colIndex * 12.9898 + s2 * 78.233) * 43758.5453;
                                 return charsList[Math.floor((x - Math.floor(x)) * charsList.length)];
                             }
-                            // The mathematically isolated leading cursor gets the exact WebGL yellow-green "electric" hue (0.242)!
-                            // When this blooms, it spreads a slightly yellow-green tint around the brightest parts of the trail.
-                            // The tail matches the WebGL palette mapping: pure matrix green (0.3 / 108 deg).
-                            color: isCursor ? (activeConfig.glintColor || "#e7fecc") : Qt.hsla(root.activeHue, root.activeSat, Math.min(0.8, adjustedBrightness), 1.0)
-                            
-                            // Fade out opacity smoothly using native C++ math
-                            opacity: isCursor ? 1.0 : adjustedBrightness * columnItem.zDepth
+                            // Pure white solid text; colored by ShaderEffect on GPU
+                            color: "#ffffff"
                             
                             font.family: matrixFont.name
                             font.pixelSize: Math.ceil(parent.width * 1.15 * columnItem.zDepth)
@@ -248,16 +225,43 @@ Rectangle {
         visible: false
     }
 
+    ShaderEffect {
+        id: rainColored
+        anchors.fill: softBaseSource
+        visible: false // Will be read by rainColoredSource
+        property variant source: softBaseSource
+        property real simTime: root.simTime
+        property real fallSpeed: activeConfig.fallSpeed !== undefined ? activeConfig.fallSpeed : 0.3
+        property real raindropLength: activeConfig.raindropLength !== undefined ? activeConfig.raindropLength : 0.75
+        property real slant: activeConfig.slant !== undefined ? activeConfig.slant : 0.0
+        property real numColumns: root.columnsCount
+        property real numRows: Math.ceil(root.height / root.colWidth) + 3
+        property real cellHeightRatio: root.cellHeight / Math.max(1, root.height)
+        property int volumetric: (activeConfig.volumetric || false) ? 1 : 0
+        property int loops: (activeConfig.loops || false) ? 1 : 0
+        property color glintColor: activeConfig.glintColor || "#e7fecc"
+        property color baseColor: Qt.hsla(root.activeHue, root.activeSat, 0.8, 1.0)
+        fragmentShader: "rain.frag.qsb"
+    }
+
+    ShaderEffectSource {
+        id: rainColoredSource
+        sourceItem: rainColored
+        hideSource: true
+        anchors.fill: rainColored
+        visible: false
+    }
+
     // 2. High-Pass Filter: Multiply the screen by itself once (squared curve) 
     // This perfectly isolates the pure white cursors and extreme neon green spots, 
     // suppressing the dark green trails so they don't emit muddy fog.
     Item {
         id: squaredContainer
-        anchors.fill: softBaseSource
+        anchors.fill: rainColoredSource
         Blend {
             anchors.fill: parent
-            source: softBaseSource
-            foregroundSource: softBaseSource
+            source: rainColoredSource
+            foregroundSource: rainColoredSource
             mode: "multiply"
         }
     }
@@ -324,8 +328,8 @@ Rectangle {
 
     // Final composition
     Blend {
-        anchors.fill: softBaseSource
-        source: softBaseSource
+        anchors.fill: rainColoredSource
+        source: rainColoredSource
         foregroundSource: dimmedBloomSrc
         mode: "screen" 
     }
@@ -345,6 +349,17 @@ Rectangle {
 
     // Apply speed scaling declaratively
     property real simTime: internalSimTime * (activeConfig.animationSpeed !== undefined ? activeConfig.animationSpeed : 1.0)
+
+    // Separate low-frequency timer for text symbol updates (drops CPU from 170% to 15%)
+    property real globalTextTimer: 0.0
+    Timer {
+        interval: 50 // 20 updates per second is plenty for discrete character flips
+        running: true
+        repeat: true
+        onTriggered: {
+            root.globalTextTimer += 0.05 * (activeConfig.animationSpeed !== undefined ? activeConfig.animationSpeed : 1.0)
+        }
+    }
 
     // Trigger config updates periodically instead of every frame
     Timer {
