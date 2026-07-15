@@ -274,7 +274,11 @@ Rectangle {
         visible: false
     }
 
-    property real bloomScale: Math.max(0.01, activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4) / 0.4
+    // Define reactive proxy properties on root so QML Engine tracks them reliably
+    property real configBloomSize: activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4
+    property real configBloomStrength: activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7
+
+    property real bloomScale: Math.max(0.01, root.configBloomSize) / 0.4
 
     // 3. Downsampled Massive Bloom (fed ONLY by the high-pass mask)
     ShaderEffectSource {
@@ -375,25 +379,28 @@ Rectangle {
         visible: false
     }
     
-    // Apply bloomStrength using standard QML rendering opacity to scale RGB and Alpha perfectly
-    Item {
-        id: bloomStrengthContainer
+    // Apply bloomStrength by multiplying the bloom RGB channels
+    Rectangle {
+        id: bloomStrengthRect
         anchors.fill: softBaseSource
-        opacity: activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7
+        color: Qt.rgba(root.configBloomStrength, root.configBloomStrength, root.configBloomStrength, 1.0)
         visible: false
+    }
 
-        ShaderEffectSource {
-            anchors.fill: parent
-            sourceItem: combinedBloom
-            hideSource: true
-        }
+    Blend {
+        id: dimmedBloom
+        anchors.fill: softBaseSource
+        source: combinedBloom
+        foregroundSource: bloomStrengthRect
+        mode: "multiply"
+        visible: false
     }
 
     ShaderEffectSource {
         id: dimmedBloomSource
-        sourceItem: bloomStrengthContainer
+        sourceItem: dimmedBloom
         hideSource: true
-        anchors.fill: bloomStrengthContainer
+        anchors.fill: dimmedBloom
         visible: false
     }
 
@@ -463,8 +470,5 @@ Rectangle {
         }
     }
 
-    Connections {
-        target: activeConfig
-        // declarative bindings automatically handle changes
-    }
+
 }
