@@ -288,6 +288,7 @@ Item {
             visible: true
             visibility: Window.FullScreen
             color: "black"
+            onClosing: testWin.destroy()
 
             // Proxy the config settings for main.qml.
             // We define the properties directly on testWin because QML does not allow declaring new properties on inline objects.
