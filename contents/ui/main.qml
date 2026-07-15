@@ -274,18 +274,19 @@ Rectangle {
         visible: false
     }
 
-    // Define reactive proxy properties on root so QML Engine tracks them reliably
-    property real configBloomSize: activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4
-    property real configBloomStrength: activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7
-
-    property real bloomScale: Math.max(0.01, root.configBloomSize) / 0.4
+    // Define properties updated explicitly every frame to bypass QML var binding bugs
+    property real currentBloomSize: 0.4
+    property real currentBloomStrength: 0.7
+    property real bloomScale: 1.0
+    property real bloomDownsample: 4.0
+    property real bloomRadiusMultiplier: 1.0
 
     // 3. Downsampled Massive Bloom (fed ONLY by the high-pass mask)
     ShaderEffectSource {
         id: downsampledHighPass
         sourceItem: squaredSource
         hideSource: false
-        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width / 4)), Math.max(1, Math.ceil(softBaseSource.height / 4)))
+        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width / root.bloomDownsample)), Math.max(1, Math.ceil(softBaseSource.height / root.bloomDownsample)))
         visible: false
     }
 
@@ -293,7 +294,7 @@ Rectangle {
         id: massiveBloom
         anchors.fill: softBaseSource
         source: downsampledHighPass
-        radius: 32 * root.bloomScale // Effective radius 128
+        radius: 32 * root.bloomRadiusMultiplier
         visible: false
     }
 
@@ -308,12 +309,11 @@ Rectangle {
     }
 
     // 4. Standard Gaussian Bloom Pyramid (for the soft wide halos on the regular trails)
-    // Downsample the high-pass base to 25% for stability and scale radius instead
     ShaderEffectSource {
         id: downsampledBase
         sourceItem: squaredSource // Feed from the squared curve so bright spots bloom much more than fading trails
         hideSource: false
-        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width / 4)), Math.max(1, Math.ceil(softBaseSource.height / 4)))
+        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width / root.bloomDownsample)), Math.max(1, Math.ceil(softBaseSource.height / root.bloomDownsample)))
         visible: false
     }
 
@@ -321,7 +321,7 @@ Rectangle {
         id: outerBloom
         anchors.fill: softBaseSource
         source: downsampledBase
-        radius: 64 * root.bloomScale // Effective 256
+        radius: 64 * root.bloomRadiusMultiplier
         visible: false
     }
 
@@ -329,7 +329,7 @@ Rectangle {
         id: midBloom
         anchors.fill: softBaseSource
         source: downsampledBase
-        radius: 24 * root.bloomScale // Effective 96
+        radius: 24 * root.bloomRadiusMultiplier
         visible: false
     }
 
@@ -337,7 +337,7 @@ Rectangle {
         id: innerBloom
         anchors.fill: softBaseSource
         source: downsampledBase
-        radius: 8 * root.bloomScale // Effective 32
+        radius: 8 * root.bloomRadiusMultiplier
         visible: false
     }
 
@@ -383,7 +383,7 @@ Rectangle {
     Rectangle {
         id: bloomStrengthRect
         anchors.fill: softBaseSource
-        color: Qt.rgba(root.configBloomStrength, root.configBloomStrength, root.configBloomStrength, 1.0)
+        color: Qt.rgba(root.currentBloomStrength, root.currentBloomStrength, root.currentBloomStrength, 1.0)
         visible: false
     }
 
@@ -426,6 +426,13 @@ Rectangle {
     }
 
     onAnimationDriverChanged: {
+        // Explicitly sync config properties to bypass var binding limitations
+        root.currentBloomSize = activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4;
+        root.currentBloomStrength = activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7;
+        root.bloomScale = Math.max(0.01, root.currentBloomSize) / 0.4;
+        root.bloomDownsample = root.bloomScale > 1.0 ? 4.0 * root.bloomScale : 4.0;
+        root.bloomRadiusMultiplier = root.bloomScale > 1.0 ? 1.0 : root.bloomScale;
+
         if (columnsRepeater.count > 0 && columnsRepeater.count !== root.colsArray.length) {
             var temp = [];
             for (var i = 0; i < columnsRepeater.count; i++) {
