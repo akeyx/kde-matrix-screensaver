@@ -10,7 +10,7 @@ layout(std140, binding = 0) uniform buf {
     float raindropLength;
     float slant;
     float numColumns;
-    float numRows;
+    float screenRows;
     float cellHeightRatio;
     int volumetric;
     int loops;
@@ -35,7 +35,7 @@ void main() {
         return;
     }
 
-    vec2 cell = floor(qt_TexCoord0 * vec2(numColumns, numRows));
+    vec2 cell = floor(qt_TexCoord0 * vec2(numColumns, screenRows));
     float colIndex = cell.x;
     float rowIndex = cell.y; 
 
@@ -67,11 +67,12 @@ void main() {
     if (isCursor) {
         finalColor = glintColor;
     } else {
-        finalColor = baseColor;
-        finalColor.a *= (adjustedBrightness * zDepth);
+        // Match WebGL exactly: scale RGB by brightness, leave alpha fully opaque
+        finalColor.rgb = baseColor.rgb * (adjustedBrightness * zDepth);
+        finalColor.a = 1.0;
     }
 
-    finalColor.rgb *= finalColor.a;
-
+    // Multiply by the white mask from the blur (acts as alpha coverage)
+    // This perfectly matches WebGL: vec4(color, 1.0) * mask
     fragColor = finalColor * texColor.a * qt_Opacity;
 }
