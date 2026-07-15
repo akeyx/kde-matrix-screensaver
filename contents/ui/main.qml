@@ -337,8 +337,12 @@ Rectangle {
     readonly property var charsList: ["モ", "エ", "ヤ", "キ", "オ", "カ", "7", "ケ", "サ", "ス", "z", "1", "5", "2", "ヨ", "タ", "ワ", "4", "ネ", "ヌ", "ナ", "9", "8", "ヒ", "0", "ホ", "ア", "3", "ウ", "セ", "ミ", "ラ", "リ", "ツ", "テ", "ニ", "ハ", "ソ", "コ", "シ", "マ", "ム", "メ"]
 
     // Pure native continuous time driver (perfectly vsync locked, 0 timer jitter)
+    property alias timeAnim: timeAnim
     property real internalSimTime: 0.0
-    NumberAnimation on internalSimTime {
+    NumberAnimation {
+        id: timeAnim
+        target: root
+        property: "internalSimTime"
         from: 0.0
         to: 1000000.0
         duration: 1000000000
@@ -355,7 +359,7 @@ Rectangle {
     // Separate low-frequency timer for text symbol updates (drops CPU from 170% to 15%)
     Timer {
         interval: 33 // ~30 fps update loop for picking random cells
-        running: true
+        running: activeConfig.animationSpeed !== undefined ? activeConfig.animationSpeed > 0 : true
         repeat: true
         onTriggered: {
             // WebGL cycleSpeed is 0.03 per 60fps frame, which is ~1.8 changes per second per cell.
