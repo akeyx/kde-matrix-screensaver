@@ -413,43 +413,43 @@ Rectangle {
     // Character set
     readonly property var charsList: ["モ", "エ", "ヤ", "キ", "オ", "カ", "7", "ケ", "サ", "ス", "z", "1", "5", "2", "ヨ", "タ", "ワ", "4", "ネ", "ヌ", "ナ", "9", "8", "ヒ", "0", "ホ", "ア", "3", "ウ", "セ", "ミ", "ラ", "リ", "ツ", "テ", "ニ", "ハ", "ソ", "コ", "シ", "マ", "ム", "メ"]
 
-    // Simulation Timer running at 60 FPS
-    Timer {
-        id: simulationTimer
-        interval: 16
+    // Simulation driver synchronized with scene graph vsync
+    property real animationDriver: 0.0
+    NumberAnimation on animationDriver {
+        from: 0.0
+        to: 1.0
+        duration: 1000
+        loops: Animation.Infinite
         running: true
-        repeat: true
-        onTriggered: {
-            // Automatically rebuild the array if the grid size changes
-            if (columnsRepeater.count > 0 && columnsRepeater.count !== root.colsArray.length) {
-                var temp = [];
-                for (var i = 0; i < columnsRepeater.count; i++) {
-                    var item = columnsRepeater.itemAt(i);
-                    if (item) temp.push(item);
-                }
-                if (temp.length === columnsRepeater.count) {
-                    root.colsArray = temp;
-                }
-            }
-
-            if (colsArray.length === 0) return;
-
-            var now = Date.now();
-            // Fallback for first frame
-            if (root.lastTime === 0 || !root.lastTime) root.lastTime = now;
-            var dt = (now - root.lastTime) / 1000.0;
-            root.lastTime = now;
-            
-            // Cap delta time to prevent massive jumps if animation stops
-            if (dt > 0.1) dt = 0.016;
-
-            var timeStep = dt * (activeConfig.animationSpeed || 1.0);
-            root.simTime += timeStep;
-
-            // Simulation logic is entirely handled by QML property bindings now!
-            // No massive 3200-iteration JS loops required here.
-        }
     }
+
+    onAnimationDriverChanged: {
+        if (columnsRepeater.count > 0 && columnsRepeater.count !== root.colsArray.length) {
+            var temp = [];
+            for (var i = 0; i < columnsRepeater.count; i++) {
+                var item = columnsRepeater.itemAt(i);
+                if (item) temp.push(item);
+            }
+            if (temp.length === columnsRepeater.count) {
+                root.colsArray = temp;
+            }
+        }
+
+        if (colsArray.length === 0) return;
+
+        var now = Date.now();
+        // Fallback for first frame
+        if (root.lastTime === 0 || !root.lastTime) root.lastTime = now;
+        var dt = (now - root.lastTime) / 1000.0;
+        root.lastTime = now;
+        
+        // Cap delta time to prevent massive jumps if animation stops
+        if (dt > 0.1) dt = 0.016;
+
+        var timeStep = dt * (activeConfig.animationSpeed || 1.0);
+        root.simTime += timeStep;
+    }
+
 
     // High performance sequential frame exporter for verification
     Timer {
