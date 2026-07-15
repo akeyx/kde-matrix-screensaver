@@ -12,10 +12,6 @@ Rectangle {
     property bool recordingEnabled: false
     property int frameCounter: 0
 
-    // Stateless global simulation time (in seconds)
-    property double simTime: 0.0
-    property double lastTime: Date.now()
-
     // Plasma 6 injects the configuration into this property on the root item
     property var configuration: null
     property var testProxyConfig: null
@@ -83,13 +79,8 @@ Rectangle {
     // Cache list of columns for ultra-fast access in JavaScript (0% CPU)
     property var colsArray: []
     
-    // Staggered ticks for text cycling to ensure cells change independently without evaluating 2400 bindings every frame
+    // Global cycle speed for independent cell cycle updates
     property double cycleSpeed: activeConfig.cycleSpeed !== undefined ? activeConfig.cycleSpeed : 0.03
-    property int cycleTick1: Math.floor((root.simTime + 0.00) * 60.0 * cycleSpeed)
-    property int cycleTick2: Math.floor((root.simTime + 10.11) * 60.0 * cycleSpeed)
-    property int cycleTick3: Math.floor((root.simTime + 20.22) * 60.0 * cycleSpeed)
-    property int cycleTick4: Math.floor((root.simTime + 30.33) * 60.0 * cycleSpeed)
-    property int cycleTick5: Math.floor((root.simTime + 40.44) * 60.0 * cycleSpeed)
     
     // Cached color properties to prevent per-cell QVariant lookups and enable native HSLA bindings
     // Force WebGL exact hue (108 degrees / 0.3) to perfectly match the original matrix green tint
@@ -181,23 +172,17 @@ Rectangle {
                             return rawBrightness > (1.0 - step);
                         }
 
-                        readonly property int rValue: {
-                            var x = Math.sin(columnItem.colIndex * 12.9898 + (index * 13) * 78.233) * 43758.5453;
-                            return Math.floor((x - Math.floor(x)) * 5);
-                        }
-
-                        readonly property int myCycleTick: {
-                            if (rValue === 0) return root.cycleTick1;
-                            if (rValue === 1) return root.cycleTick2;
-                            if (rValue === 2) return root.cycleTick3;
-                            if (rValue === 3) return root.cycleTick4;
-                            return root.cycleTick5;
-                        }
-
                         readonly property double textSeed2Base: {
                             var x = Math.sin(columnItem.colIndex * 12.9898 + (index + 1000) * 78.233) * 43758.5453;
                             return index + Math.floor(x - Math.floor(x));
                         }
+                        
+                        // Generate a unique starting offset so cells cycle completely independently!
+                        readonly property int cycleOffset: Math.floor((textSeed2Base - Math.floor(textSeed2Base)) * 1000.0)
+                        
+                        // Only emits a change when the floored integer increments (about 1.8 times a second per cell)
+                        // Because each cell has a unique cycleOffset, text updates are spread smoothly across all frames
+                        readonly property int myCycleTick: Math.floor((root.simTime * 60.0 * root.cycleSpeed) + cycleOffset)
 
                         Text {
                             anchors.fill: parent
@@ -348,48 +333,42 @@ Rectangle {
     // Character set
     readonly property var charsList: ["モ", "エ", "ヤ", "キ", "オ", "カ", "7", "ケ", "サ", "ス", "z", "1", "5", "2", "ヨ", "タ", "ワ", "4", "ネ", "ヌ", "ナ", "9", "8", "ヒ", "0", "ホ", "ア", "3", "ウ", "セ", "ミ", "ラ", "リ", "ツ", "テ", "ニ", "ハ", "ソ", "コ", "シ", "マ", "ム", "メ"]
 
-    // Simulation driver synchronized with scene graph vsync
-    property real animationDriver: 0.0
-    NumberAnimation on animationDriver {
+    // Pure native continuous time driver (perfectly vsync locked, 0 timer jitter)
+    property real internalSimTime: 0.0
+    NumberAnimation on internalSimTime {
         from: 0.0
-        to: 1.0
-        duration: 1000
+        to: 1000000.0
+        duration: 1000000000
         loops: Animation.Infinite
         running: true
     }
 
-    onAnimationDriverChanged: {
-        // Explicitly sync config properties to bypass var binding limitations
-        root.currentBloomSize = activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4;
-        root.currentBloomStrength = activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7;
-        root.bloomScale = Math.max(0.01, root.currentBloomSize) / 0.4;
-        root.bloomDownsample = 4.0;
-        root.bloomRadiusMultiplier = root.bloomScale > 1.0 ? 1.0 : root.bloomScale;
+    // Apply speed scaling declaratively
+    property real simTime: internalSimTime * (activeConfig.animationSpeed !== undefined ? activeConfig.animationSpeed : 1.0)
 
-        if (columnsRepeater.count > 0 && columnsRepeater.count !== root.colsArray.length) {
-            var temp = [];
-            for (var i = 0; i < columnsRepeater.count; i++) {
-                var item = columnsRepeater.itemAt(i);
-                if (item) temp.push(item);
-            }
-            if (temp.length === columnsRepeater.count) {
-                root.colsArray = temp;
+    // Trigger config updates periodically instead of every frame
+    Timer {
+        interval: 100
+        running: true
+        repeat: true
+        onTriggered: {
+            root.currentBloomSize = activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4;
+            root.currentBloomStrength = activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.1;
+            root.bloomScale = Math.max(0.01, root.currentBloomSize) / 0.4;
+            root.bloomDownsample = 4.0;
+            root.bloomRadiusMultiplier = root.bloomScale > 1.0 ? 1.0 : root.bloomScale;
+
+            if (columnsRepeater.count > 0 && columnsRepeater.count !== root.colsArray.length) {
+                var temp = [];
+                for (var i = 0; i < columnsRepeater.count; i++) {
+                    var item = columnsRepeater.itemAt(i);
+                    if (item) temp.push(item);
+                }
+                if (temp.length === columnsRepeater.count) {
+                    root.colsArray = temp;
+                }
             }
         }
-
-        if (colsArray.length === 0) return;
-
-        var now = Date.now();
-        // Fallback for first frame
-        if (root.lastTime === 0 || !root.lastTime) root.lastTime = now;
-        var dt = (now - root.lastTime) / 1000.0;
-        root.lastTime = now;
-        
-        // Cap delta time to prevent massive jumps if animation stops
-        if (dt > 0.1) dt = 0.016;
-
-        var timeStep = dt * (activeConfig.animationSpeed !== undefined ? activeConfig.animationSpeed : 1.0);
-        root.simTime += timeStep;
     }
 
 
