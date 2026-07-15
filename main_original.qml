@@ -208,7 +208,6 @@ Rectangle {
         sourceItem: container
         hideSource: true
         anchors.fill: container
-        visible: false
     }
 
     // Soften the razor-sharp vector text to match WebGL's raster font texture
@@ -259,14 +258,6 @@ Rectangle {
     // 2. High-Pass Filter: Multiply the screen by itself once (squared curve) 
     // This perfectly isolates the pure white cursors and extreme neon green spots, 
     // suppressing the dark green trails so they don't emit muddy fog.
-    ShaderEffectSource {
-        id: dummyHider
-        sourceItem: rainColoredSource
-        hideSource: true
-        anchors.fill: rainColoredSource
-        opacity: 0.0 // Hide rainColoredSource from drawing naturally, while preserving its opacity for Blend!
-    }
-
     Item {
         id: squaredContainer
         anchors.fill: rainColoredSource
@@ -283,7 +274,6 @@ Rectangle {
         sourceItem: squaredContainer
         hideSource: true
         anchors.fill: squaredContainer
-        visible: false // This works perfectly because FastBlur is a ShaderEffect!
     }
 
     // Define properties updated explicitly every frame to bypass QML var binding bugs
@@ -293,48 +283,58 @@ Rectangle {
     property real bloomDownsample: 1.0
     property real bloomRadiusMultiplier: 1.0
 
-    FastBlur {
-        id: blurCore
-        anchors.fill: parent
-        source: squaredSource
-        radius: Math.min(16, Math.max(1, 16 * root.bloomRadiusMultiplier))
-        transparentBorder: true
-        visible: false
-        opacity: root.currentBloomStrength
-    }
-
-    FastBlur {
-        id: blurGlow
-        anchors.fill: parent
-        source: squaredSource
-        radius: Math.min(64, Math.max(1, 64 * root.bloomRadiusMultiplier))
-        transparentBorder: true
-        visible: false
-    }
-
-    ColorOverlay {
-        id: tintedGlow
-        anchors.fill: parent
-        source: blurGlow
-        color: activeConfig.glintColor || "#e7fecc"
-        visible: false
-        opacity: root.currentBloomStrength
-    }
-
-    Blend {
-        id: combinedBloom
-        anchors.fill: parent
-        source: blurCore
-        foregroundSource: tintedGlow
-        mode: "screen"
-
-        layer.enabled: true
-        layer.effect: Component {
-            Blend {
-                foregroundSource: rainColoredSource // Reads full opacity sharp text!
-                mode: "screen"
-            }
+    // MultiEffect must not be visible: false, otherwise it is optimized out in Qt6.
+    // We put it in an Item and hide it with ShaderEffectSource.
+    Item {
+        id: intenseBloomContainer
+        anchors.fill: softBaseSource
+        MultiEffect {
+            id: intenseBloom
+            anchors.fill: parent
+            source: squaredSource
+            blurEnabled: true
+            blurMax: 64 * root.bloomRadiusMultiplier
+            blur: 1.0
+            shadowEnabled: true
+            shadowBlur: 1.0
+            shadowColor: activeConfig.glintColor || "#e7fecc"
+            shadowHorizontalOffset: 0
+            shadowVerticalOffset: 0
         }
+    }
+
+    ShaderEffectSource {
+        id: intenseBloomSource
+        sourceItem: intenseBloomContainer
+        hideSource: true
+        anchors.fill: intenseBloomContainer
+    }
+
+    // Capture the final bloom with the requested opacity applied during rendering!
+    Item {
+        id: dimmedBloomContainer
+        anchors.fill: softBaseSource
+        ShaderEffectSource {
+            anchors.fill: parent
+            sourceItem: intenseBloomContainer
+            hideSource: true
+            opacity: root.currentBloomStrength
+        }
+    }
+
+    ShaderEffectSource {
+        id: dimmedBloomSrc
+        sourceItem: dimmedBloomContainer
+        hideSource: true
+        anchors.fill: dimmedBloomContainer
+    }
+
+    // Final composition
+    Blend {
+        anchors.fill: rainColoredSource
+        source: rainColoredSource
+        foregroundSource: dimmedBloomSrc
+        mode: "screen" 
     }
 
     // Character set

@@ -1,5 +1,5 @@
-import QtQuick 2.15
-import QtQuick.Window 2.15
+import QtQuick
+import QtQuick.Window
 import Qt5Compat.GraphicalEffects
 
 Window {
@@ -17,19 +17,30 @@ Window {
         color: "white"
     }
 
-    ShaderEffectSource {
-        id: hiddenSource
-        sourceItem: sourceItem
-        hideSource: true
+    Item {
+        id: intenseBloomContainer
         anchors.fill: parent
-        visible: false
+        FastBlur {
+            anchors.fill: parent
+            source: sourceItem
+            radius: 32
+            transparentBorder: true
+        }
     }
 
-    FastBlur {
+    ShaderEffectSource {
+        id: dimmedBloomSrc
+        sourceItem: intenseBloomContainer
+        hideSource: true
         anchors.fill: parent
-        source: hiddenSource
-        radius: 32
-        transparentBorder: true
+        opacity: 0.0 // THIS IS THE MAGIC FIX!
+    }
+
+    Blend {
+        anchors.fill: parent
+        source: sourceItem
+        foregroundSource: dimmedBloomSrc
+        mode: "screen"
     }
     
     Timer {
@@ -37,7 +48,7 @@ Window {
         running: true
         onTriggered: {
             parent.grabToImage(function(result) {
-                result.saveToFile("test_bloom.png");
+                result.saveToFile("test_multi.png");
                 Qt.quit();
             });
         }

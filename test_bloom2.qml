@@ -1,5 +1,5 @@
-import QtQuick 2.15
-import QtQuick.Window 2.15
+import QtQuick
+import QtQuick.Window
 import Qt5Compat.GraphicalEffects
 
 Window {
@@ -25,10 +25,12 @@ Window {
         visible: false
     }
 
-    FastBlur {
+    DropShadow {
         anchors.fill: parent
         source: hiddenSource
         radius: 32
+        samples: 65
+        color: "#e7fecc"
         transparentBorder: true
     }
     
@@ -37,7 +39,7 @@ Window {
         running: true
         onTriggered: {
             parent.grabToImage(function(result) {
-                result.saveToFile("test_bloom.png");
+                result.saveToFile("test_bloom2.png");
                 Qt.quit();
             });
         }
