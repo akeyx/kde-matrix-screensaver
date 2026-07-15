@@ -259,6 +259,7 @@ Rectangle {
         sourceItem: softBase
         hideSource: true
         anchors.fill: softBase
+        visible: false
     }
 
     // 2. High-Pass Filter: Multiply the screen by itself once (squared curve) 
@@ -377,6 +378,7 @@ Rectangle {
         sourceItem: combinedBloom
         hideSource: true
         anchors.fill: combinedBloom
+        visible: false
     }
 
     // Apply bloomStrength by masking the alpha of the combined bloom
@@ -400,6 +402,7 @@ Rectangle {
         sourceItem: dimmedBloom
         hideSource: true
         anchors.fill: dimmedBloom
+        visible: false
     }
 
     // Final composition: Base + Dimmed Bloom
