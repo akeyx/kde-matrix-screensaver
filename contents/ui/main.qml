@@ -144,6 +144,14 @@ Rectangle {
                 readonly property double slant: activeConfig.slant !== undefined ? activeConfig.slant : 0.0
                 readonly property double rainTimeStep: (root.cellHeight / Math.max(1, root.height)) * 0.5 / (activeConfig.raindropLength !== undefined ? activeConfig.raindropLength : 0.75)
 
+                function randomizeRandomCell() {
+                    let randomRow = Math.floor(Math.random() * trailRepeater.count);
+                    let cell = trailRepeater.itemAt(randomRow);
+                    if (cell) {
+                        cell.randomizeChar();
+                    }
+                }
+
                 // 2. The Trail (fixed grid evaluating the GLSL brightness function)
                 Repeater {
                     id: trailRepeater
@@ -155,24 +163,19 @@ Rectangle {
                         
                         // CPU bindings stripped; math moved to GPU ShaderEffect
 
-                        readonly property double textSeed2Base: {
-                            var x = Math.sin(columnItem.colIndex * 12.9898 + (index + 1000) * 78.233) * 43758.5453;
-                            return index + (x - Math.floor(x));
+                        // Random starting char
+                        Component.onCompleted: {
+                            myText.text = charsList[Math.floor(Math.random() * charsList.length)]
                         }
                         
-                        // Generate a unique starting phase offset between 0.0 and 1.0
-                        readonly property double cycleOffset: textSeed2Base - Math.floor(textSeed2Base)
-                        
-                        // Decouple text evaluation from the 60fps simTime to save massive CPU
-                        readonly property int myCycleTick: Math.floor((root.globalTextTimer * 60.0 * root.cycleSpeed) + cycleOffset)
+                        function randomizeChar() {
+                            myText.text = charsList[Math.floor(Math.random() * charsList.length)]
+                        }
 
                         Text {
+                            id: myText
                             anchors.fill: parent
-                            text: {
-                                var s2 = textSeed2Base + myCycleTick;
-                                var x = Math.sin(columnItem.colIndex * 12.9898 + s2 * 78.233) * 43758.5453;
-                                return charsList[Math.floor((x - Math.floor(x)) * charsList.length)];
-                            }
+                            text: " "
                             // Pure white solid text; colored by ShaderEffect on GPU
                             color: "#ffffff"
                             
@@ -350,14 +353,29 @@ Rectangle {
     // Apply speed scaling declaratively
     property real simTime: internalSimTime * (activeConfig.animationSpeed !== undefined ? activeConfig.animationSpeed : 1.0)
 
+    // Count total cells
+    property int totalCellsCount: root.columnsCount * (Math.ceil(root.height / root.colWidth) + 3)
+
     // Separate low-frequency timer for text symbol updates (drops CPU from 170% to 15%)
-    property real globalTextTimer: 0.0
     Timer {
-        interval: 50 // 20 updates per second is plenty for discrete character flips
+        interval: 33 // ~30 fps update loop for picking random cells
         running: true
         repeat: true
         onTriggered: {
-            root.globalTextTimer += 0.05 * (activeConfig.animationSpeed !== undefined ? activeConfig.animationSpeed : 1.0)
+            // WebGL cycleSpeed is 0.03 per 60fps frame, which is ~1.8 changes per second per cell.
+            // We run at ~30fps (33ms interval), so we want 1.8 * count total changes per sec.
+            // Per tick, we update: (1.8 * count) / 30 cells.
+            let changesPerTick = Math.max(1, Math.floor((1.8 * root.totalCellsCount) / 30));
+            for (let i = 0; i < changesPerTick; i++) {
+                let randomCol = Math.floor(Math.random() * columnsRepeater.count);
+                let colItem = columnsRepeater.itemAt(randomCol);
+                if (colItem) {
+                    // Because trailRepeater is inside the colItem, we need to access its items
+                    // We can't easily query Repeater inside Repeater without an id.
+                    // Let's just expose a function on the columnItem.
+                    colItem.randomizeRandomCell();
+                }
+            }
         }
     }
 

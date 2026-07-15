@@ -40,6 +40,7 @@ void main() {
     float rowIndex = cell.y; 
 
     // Map the current cell to WebGL's 100x80 simulation grid
+    float cellWidthRatio = 1.0 / numColumns;
     float xRatio = colIndex * cellWidthRatio;
     float yRatio = rowIndex * cellHeightRatio;
     
