@@ -238,10 +238,10 @@ Rectangle {
         property real raindropLength: activeConfig.raindropLength !== undefined ? activeConfig.raindropLength : 0.75
         property real slant: activeConfig.slant !== undefined ? activeConfig.slant : 0.0
         property real numColumns: root.columnsCount
-        property real screenRows: root.height / root.cellHeight
+        property real screenRows: root.height / Math.max(1, root.cellHeight)
         property real cellHeightRatio: root.cellHeight / Math.max(1, root.height)
-        property int volumetric: (activeConfig.volumetric || false) ? 1 : 0
-        property int loops: (activeConfig.loops || false) ? 1 : 0
+        property real volumetric: (activeConfig.volumetric || false) ? 1.0 : 0.0
+        property real loops: (activeConfig.loops || false) ? 1.0 : 0.0
         property color glintColor: activeConfig.glintColor || "#e7fecc"
         property color baseColor: Qt.hsla(root.activeHue, root.activeSat, 0.5, 1.0)
         fragmentShader: "rain.frag.qsb"
