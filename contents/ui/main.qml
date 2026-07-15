@@ -137,6 +137,8 @@ Rectangle {
 
                 readonly property int trailLength: Math.ceil(100 * (wallpaper.configuration.raindropLength || 0.75))
                 readonly property int maxVisibleRows: Math.ceil(root.height / root.colWidth) + 3
+                readonly property double slant: wallpaper.configuration.slant || 0.0
+                readonly property double rainTimeStep: (root.cellHeight / Math.max(1, root.height)) * 0.5 / (wallpaper.configuration.raindropLength || 0.75)
 
                 // 2. The Trail (fixed grid evaluating the GLSL brightness function)
                 Repeater {
@@ -148,40 +150,49 @@ Rectangle {
                         y: index * cellHeight
                         
                         readonly property double raindropLength: wallpaper.configuration.raindropLength || 0.75
-                        // Apply standard WebGL cyclic gradient
-                        readonly property double normalizedY: 1.0 - ((index * root.cellHeight) / Math.max(1, root.height))
-                        readonly property double rawRainTime: (normalizedY * 0.5 + columnItem.columnTime) / (wallpaper.configuration.raindropLength || 0.75)
-                        readonly property double wobbledRainTime: (wallpaper.configuration.loops || false) ? rawRainTime : root.wobble(rawRainTime)
+                        readonly property double rawRainTime: ((1.0 - ((index * root.cellHeight) / Math.max(1, root.height))) * 0.5 + columnItem.columnTime) / (wallpaper.configuration.raindropLength || 0.75)
                         
-                        // In WebGL, the base brightness is fract(wobbledRainTime).
-                        readonly property double rawBrightness: 1.0 - (wobbledRainTime - Math.floor(wobbledRainTime))
+                        readonly property double rawBrightness: {
+                            var w = (wallpaper.configuration.loops || false || columnItem.slant === 0.0) ? rawRainTime : (rawRainTime + Math.sin(rawRainTime * Math.PI) * columnItem.slant);
+                            return 1.0 - (w - Math.floor(w));
+                        }
                         
-                        // WebGL applies baseContrast (1.1) and baseBrightness (-0.5). 
-                        // This math truncates the tails, making the screen sparse and pitch black in empty areas.
                         readonly property double adjustedBrightness: Math.max(0.0, rawBrightness * 1.1 - 0.5)
                         
                         // Hide off-screen or totally dark cells to save render time
                         visible: adjustedBrightness > 0.01
 
-                        // Mathematically isolate the exact single leading cursor cell by comparing with the cell BELOW, exactly matching WebGL
-                        readonly property double nextNormalizedY: 1.0 - (((index + 1) * root.cellHeight) / Math.max(1, root.height))
-                        readonly property double nextRainTime: (nextNormalizedY * 0.5 + columnItem.columnTime) / (wallpaper.configuration.raindropLength || 0.75)
-                        readonly property double nextWobbled: (wallpaper.configuration.loops || false) ? nextRainTime : root.wobble(nextRainTime)
-                        readonly property double nextBrightness: 1.0 - (nextWobbled - Math.floor(nextWobbled))
-                        readonly property bool isCursor: adjustedBrightness > nextBrightness
+                        // Mathematically isolate the exact single leading cursor cell
+                        readonly property bool isCursor: {
+                            var step = (wallpaper.configuration.loops || false || columnItem.slant === 0.0) ? columnItem.rainTimeStep : (columnItem.rainTimeStep * Math.max(0.1, 1.0 + Math.cos(rawRainTime * Math.PI) * columnItem.slant * Math.PI));
+                            return rawBrightness > (1.0 - step);
+                        }
+
+                        readonly property int rValue: {
+                            var x = Math.sin(columnItem.colIndex * 12.9898 + (index * 13) * 78.233) * 43758.5453;
+                            return Math.floor((x - Math.floor(x)) * 5);
+                        }
 
                         readonly property int myCycleTick: {
-                            var r = Math.floor(randomFloat(columnItem.colIndex, index * 13) * 5);
-                            if (r === 0) return root.cycleTick1;
-                            if (r === 1) return root.cycleTick2;
-                            if (r === 2) return root.cycleTick3;
-                            if (r === 3) return root.cycleTick4;
+                            if (rValue === 0) return root.cycleTick1;
+                            if (rValue === 1) return root.cycleTick2;
+                            if (rValue === 2) return root.cycleTick3;
+                            if (rValue === 3) return root.cycleTick4;
                             return root.cycleTick5;
+                        }
+
+                        readonly property double textSeed2Base: {
+                            var x = Math.sin(columnItem.colIndex * 12.9898 + (index + 1000) * 78.233) * 43758.5453;
+                            return index + Math.floor(x - Math.floor(x));
                         }
 
                         Text {
                             anchors.fill: parent
-                            text: parent.visible ? charsList[Math.floor(randomFloat(columnItem.colIndex, index + Math.floor(randomFloat(columnItem.colIndex, index + 1000) + myCycleTick)) * charsList.length)] : ""
+                            text: {
+                                var s2 = textSeed2Base + myCycleTick;
+                                var x = Math.sin(columnItem.colIndex * 12.9898 + s2 * 78.233) * 43758.5453;
+                                return charsList[Math.floor((x - Math.floor(x)) * charsList.length)];
+                            }
                             // The mathematically isolated leading cursor gets the exact WebGL yellow-green "electric" hue (0.242)!
                             // When this blooms, it spreads a slightly yellow-green tint around the brightest parts of the trail.
                             // The tail matches the WebGL palette mapping: pure matrix green (0.3 / 108 deg).
