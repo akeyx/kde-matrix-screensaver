@@ -39,15 +39,19 @@ void main() {
     float colIndex = cell.x;
     float rowIndex = cell.y; 
 
-    float columnTimeOffset = randomFloat(colIndex, 0.0) * 1000.0;
-    float columnSpeedOffset = randomFloat(colIndex + 0.1, 0.0) * 0.5 + 0.5;
-    float zDepth = volumetric > 0 ? (randomFloat(colIndex + 0.2, 0.0) * 0.75 + 0.25) : 1.0;
+    // Map the current cell to WebGL's 100x80 simulation grid
+    float xRatio = colIndex * cellWidthRatio;
+    float yRatio = rowIndex * cellHeightRatio;
+    
+    float webglX = xRatio * 100.0;
+    float webglY = (1.0 - yRatio) * 80.0;
+    
+    float columnTimeOffset = randomFloat(webglX, 0.0) * 1000.0;
+    float columnSpeedOffset = randomFloat(webglX + 0.1, 0.0) * 0.5 + 0.5;
+    float zDepth = volumetric > 0 ? (randomFloat(webglX + 0.2, 0.0) * 0.75 + 0.25) : 1.0;
 
     float columnTime = columnTimeOffset + simTime * fallSpeed * columnSpeedOffset;
-    
-    float cellYRatio = rowIndex * cellHeightRatio;
-    
-    float rawRainTime = ((1.0 - cellYRatio) * 0.5 + columnTime) / raindropLength;
+    float rawRainTime = (webglY * 0.01 + columnTime) / raindropLength;
 
     float w = rawRainTime;
     if (loops <= 0 && slant != 0.0) {
@@ -56,18 +60,13 @@ void main() {
     float rawBrightness = 1.0 - fract(w);
     float adjustedBrightness = max(0.0, rawBrightness * 1.1 - 0.5);
 
-    float rainTimeStep = (cellHeightRatio * 0.5) / raindropLength;
-    float stepAmount = rainTimeStep;
-    if (loops <= 0 && slant != 0.0) {
-        stepAmount = rainTimeStep * max(0.1, 1.0 + cos(rawRainTime * 3.14159265359) * slant * 3.14159265359);
-    }
-    bool isCursor = rawBrightness > (1.0 - stepAmount);
+    // In WebGL, the cursor is the bottom-most pixel where it wraps around.
+    bool isCursor = rawBrightness > 0.95;
 
     vec4 finalColor = vec4(0.0);
     if (isCursor) {
         finalColor = glintColor;
     } else {
-        // Match WebGL exactly: scale RGB by brightness, leave alpha fully opaque
         finalColor.rgb = baseColor.rgb * (adjustedBrightness * zDepth);
         finalColor.a = 1.0;
     }
