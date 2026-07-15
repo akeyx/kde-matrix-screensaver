@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 Rectangle {
     id: root
@@ -31,7 +32,7 @@ Rectangle {
         raindropLength: 0.75,
         slant: 0.0,
         bloomSize: 0.4,
-        bloomStrength: 0.7,
+        bloomStrength: 0.1,
         ditherMagnitude: 0.05,
         resolution: 0.75,
         cursorColor: "#c1ff75",
@@ -265,177 +266,82 @@ Rectangle {
     // 2. High-Pass Filter: Multiply the screen by itself once (squared curve) 
     // This perfectly isolates the pure white cursors and extreme neon green spots, 
     // suppressing the dark green trails so they don't emit muddy fog.
-    Blend {
-        id: squaredSource
+    Item {
+        id: squaredContainer
         anchors.fill: softBaseSource
-        source: softBaseSource
-        foregroundSource: softBaseSource
-        mode: "multiply"
-        visible: false
+        Blend {
+            anchors.fill: parent
+            source: softBaseSource
+            foregroundSource: softBaseSource
+            mode: "multiply"
+        }
+    }
+
+    ShaderEffectSource {
+        id: squaredSource
+        sourceItem: squaredContainer
+        hideSource: true
+        anchors.fill: squaredContainer
     }
 
     // Define properties updated explicitly every frame to bypass QML var binding bugs
     property real currentBloomSize: 0.4
-    property real currentBloomStrength: 0.7
+    property real currentBloomStrength: 0.1
     property real bloomScale: 1.0
-    property real bloomDownsample: 4.0
+    property real bloomDownsample: 1.0
     property real bloomRadiusMultiplier: 1.0
 
-    // 3 & 4. Downsampled Base for all Bloom Passes
-    // Using a single ShaderEffectSource guarantees Qt6 RHI populates the texture correctly
-    ShaderEffectSource {
-        id: bloomSource
-        sourceItem: softBaseSource
-        hideSource: false
-        live: true
-        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width / root.bloomDownsample)), Math.max(1, Math.ceil(softBaseSource.height / root.bloomDownsample)))
-        visible: false
-    }
-
-    FastBlur {
-        id: massiveBloom
+    // MultiEffect must not be visible: false, otherwise it is optimized out in Qt6.
+    // We put it in an Item and hide it with ShaderEffectSource.
+    Item {
+        id: intenseBloomContainer
         anchors.fill: softBaseSource
-        source: bloomSource
-        radius: 32 * root.bloomRadiusMultiplier
-        visible: false
-    }
-
-    // Multiply the massive bloom intensity by 16x to counteract FastBlur diffusion
-    Blend {
-        id: massiveBoost1
-        anchors.fill: softBaseSource
-        source: massiveBloom
-        foregroundSource: massiveBloom
-        mode: "addition"
-        visible: false
-    }
-    Blend {
-        id: massiveBoost2
-        anchors.fill: softBaseSource
-        source: massiveBoost1
-        foregroundSource: massiveBoost1
-        mode: "addition"
-        visible: false
-    }
-    Blend {
-        id: massiveBoost3
-        anchors.fill: softBaseSource
-        source: massiveBoost2
-        foregroundSource: massiveBoost2
-        mode: "addition"
-        visible: false
-    }
-    Blend {
-        id: intenseMassiveBloom
-        anchors.fill: softBaseSource
-        source: massiveBoost3
-        foregroundSource: massiveBoost3
-        mode: "addition"
-        visible: false
-    }
-
-    FastBlur {
-        id: outerBloom
-        anchors.fill: softBaseSource
-        source: bloomSource
-        radius: 64 * root.bloomRadiusMultiplier
-        visible: false
-    }
-
-    FastBlur {
-        id: midBloom
-        anchors.fill: softBaseSource
-        source: bloomSource
-        radius: 24 * root.bloomRadiusMultiplier
-        visible: false
-    }
-
-    FastBlur {
-        id: innerBloom
-        anchors.fill: softBaseSource
-        source: bloomSource
-        radius: 8 * root.bloomRadiusMultiplier
-        visible: false
-    }
-
-    Blend {
-        id: combinedOuterMid
-        anchors.fill: softBaseSource
-        source: outerBloom
-        foregroundSource: midBloom
-        mode: "addition" // Sum the blurs for much higher energy on the bright spots
-        visible: false
-    }
-
-    Blend {
-        id: standardTrailBloom
-        anchors.fill: softBaseSource
-        source: combinedOuterMid
-        foregroundSource: innerBloom
-        mode: "addition"
-        visible: false
-    }
-
-    // Multiply the trail bloom intensity by 8x
-    Blend {
-        id: trailBoost1
-        anchors.fill: softBaseSource
-        source: standardTrailBloom
-        foregroundSource: standardTrailBloom
-        mode: "addition"
-        visible: false
-    }
-    Blend {
-        id: trailBoost2
-        anchors.fill: softBaseSource
-        source: trailBoost1
-        foregroundSource: trailBoost1
-        mode: "addition"
-        visible: false
-    }
-    Blend {
-        id: intenseTrailBloom
-        anchors.fill: softBaseSource
-        source: trailBoost2
-        foregroundSource: trailBoost2
-        mode: "addition"
-        visible: false
-    }
-
-    // 5. Combine the massive bright spot bloom with the standard wide trail bloom
-    Blend {
-        id: combinedBloom
-        anchors.fill: softBaseSource
-        source: intenseMassiveBloom
-        foregroundSource: intenseTrailBloom
-        mode: "screen"
-        visible: false
-    }
-    
-    // Apply bloomStrength by multiplying the bloom RGB channels
-    // Apply bloomStrength directly by darkening the RGB channels via BrightnessContrast.
-    // This is 100% robust in Qt6 RHI (unlike blending a hidden raw Rectangle).
-    BrightnessContrast {
-        id: dimmedBloom
-        anchors.fill: softBaseSource
-        source: combinedBloom
-        brightness: root.currentBloomStrength - 1.0
-        visible: false
+        MultiEffect {
+            id: intenseBloom
+            anchors.fill: parent
+            source: squaredSource
+            blurEnabled: true
+            blurMax: 64 * root.bloomRadiusMultiplier
+            blur: 1.0
+            shadowEnabled: true
+            shadowBlur: 1.0
+            shadowColor: activeConfig.glintColor || "#e7fecc"
+            shadowHorizontalOffset: 0
+            shadowVerticalOffset: 0
+        }
     }
 
     ShaderEffectSource {
-        id: dimmedBloomSource
-        sourceItem: dimmedBloom
+        id: intenseBloomSource
+        sourceItem: intenseBloomContainer
         hideSource: true
-        anchors.fill: dimmedBloom
-        visible: false
+        anchors.fill: intenseBloomContainer
     }
 
-    // Final composition: Base + Dimmed Bloom
+    // Capture the final bloom with the requested opacity applied during rendering!
+    Item {
+        id: dimmedBloomContainer
+        anchors.fill: softBaseSource
+        ShaderEffectSource {
+            anchors.fill: parent
+            sourceItem: intenseBloomContainer
+            hideSource: true
+            opacity: root.currentBloomStrength
+        }
+    }
+
+    ShaderEffectSource {
+        id: dimmedBloomSrc
+        sourceItem: dimmedBloomContainer
+        hideSource: true
+        anchors.fill: dimmedBloomContainer
+    }
+
+    // Final composition
     Blend {
         anchors.fill: softBaseSource
         source: softBaseSource
-        foregroundSource: dimmedBloomSource
+        foregroundSource: dimmedBloomSrc
         mode: "screen" 
     }
 
@@ -457,7 +363,7 @@ Rectangle {
         root.currentBloomSize = activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4;
         root.currentBloomStrength = activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7;
         root.bloomScale = Math.max(0.01, root.currentBloomSize) / 0.4;
-        root.bloomDownsample = root.bloomScale > 1.0 ? 4.0 * root.bloomScale : 4.0;
+        root.bloomDownsample = 4.0;
         root.bloomRadiusMultiplier = root.bloomScale > 1.0 ? 1.0 : root.bloomScale;
 
         if (columnsRepeater.count > 0 && columnsRepeater.count !== root.colsArray.length) {

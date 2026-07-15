@@ -33,7 +33,7 @@
             <default>0.4</default>
         </entry>
         <entry name="bloomStrength" type="Double">
-            <default>0.7</default>
+            <default>0.1</default>
         </entry>
         <entry name="cursorColor" type="Color">
             <default>#2de500</default>
