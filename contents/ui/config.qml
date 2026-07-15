@@ -315,7 +315,7 @@ Item {
             Loader {
                 anchors.fill: parent
                 source: "main.qml"
-                onLoaded: item.wallpaper = wallpaper
+                onLoaded: item.testProxyConfig = wallpaper.configuration
             }
 
             // Close on click or key press

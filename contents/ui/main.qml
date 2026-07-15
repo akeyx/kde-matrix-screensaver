@@ -5,7 +5,7 @@ Rectangle {
     id: root
     width: parent ? parent.width : 1920
     height: parent ? parent.height : 1080
-    color: wallpaper.configuration.backgroundColor || "#000000"
+    color: activeConfig.backgroundColor || "#000000"
 
     // Recording control properties
     property bool recordingEnabled: false
@@ -15,38 +15,34 @@ Rectangle {
     property double simTime: 0.0
     property double lastTime: Date.now()
 
-    // Default wallpaper config for standalone testing.
-    // When running inside Plasma, the engine injects its own "wallpaper"
-    // context property which overrides this one automatically.
-    property var wallpaper: ({
-        configuration: {
-            version: "classic",
-            font: "matrixcode",
-            effect: "palette",
-            scalingMode: 1,
-            characterSize: 24,
-            numColumns: 80,
-            animationSpeed: 1.0,
-            fallSpeed: 0.3,
-            cycleSpeed: 0.03,
-            raindropLength: 0.75,
-            slant: 0.0,
-            bloomSize: 0.4,
-            bloomStrength: 0.7,
-            ditherMagnitude: 0.05,
-            resolution: 0.75,
-            cursorColor: "#c1ff75",
-            backgroundColor: "#000000",
-            glintColor: "#ffffff",
-            volumetric: false,
-            glyphFlip: false,
-            glyphRotation: 0,
-            skipIntro: true,
-            suppressWarnings: true,
-            camera: false,
-            stripeColors: "",
-            palette: ""
-        }
+    property var testProxyConfig: null
+    readonly property var activeConfig: testProxyConfig ? testProxyConfig : (typeof wallpaper !== 'undefined' ? wallpaper.configuration : {
+        version: "classic",
+        font: "matrixcode",
+        effect: "palette",
+        scalingMode: 1,
+        characterSize: 24,
+        numColumns: 80,
+        animationSpeed: 1.0,
+        fallSpeed: 0.3,
+        cycleSpeed: 0.03,
+        raindropLength: 0.75,
+        slant: 0.0,
+        bloomSize: 0.4,
+        bloomStrength: 0.7,
+        ditherMagnitude: 0.05,
+        resolution: 0.75,
+        cursorColor: "#c1ff75",
+        backgroundColor: "#000000",
+        glintColor: "#ffffff",
+        volumetric: false,
+        glyphFlip: false,
+        glyphRotation: 0,
+        skipIntro: true,
+        suppressWarnings: true,
+        camera: false,
+        stripeColors: "",
+        palette: ""
     })
 
     FontLoader {
@@ -56,12 +52,12 @@ Rectangle {
 
     // Grid size parameters
     readonly property int columnsCount: {
-        if (wallpaper.configuration.scalingMode === 1) {
+        if (activeConfig.scalingMode === 1) {
             // Fixed Character Size (Auto-fill columns based on screen width)
-            return Math.max(1, Math.floor(width / (wallpaper.configuration.characterSize || 24)))
+            return Math.max(1, Math.floor(width / (activeConfig.characterSize || 24)))
         } else {
             // Fixed Number of Columns
-            return wallpaper.configuration.numColumns || 80
+            return activeConfig.numColumns || 80
         }
     }
     readonly property double colWidth: width / columnsCount
@@ -71,7 +67,7 @@ Rectangle {
     property var colsArray: []
     
     // Staggered ticks for text cycling to ensure cells change independently without evaluating 2400 bindings every frame
-    property double cycleSpeed: wallpaper.configuration.cycleSpeed || 0.03
+    property double cycleSpeed: activeConfig.cycleSpeed || 0.03
     property int cycleTick1: Math.floor((root.simTime + 0.00) * 60.0 * cycleSpeed)
     property int cycleTick2: Math.floor((root.simTime + 10.11) * 60.0 * cycleSpeed)
     property int cycleTick3: Math.floor((root.simTime + 20.22) * 60.0 * cycleSpeed)
@@ -83,7 +79,7 @@ Rectangle {
     property real baseHue: 0.3
     property real baseSat: 1.0
     
-    property color activeCursorColor: wallpaper.configuration.cursorColor || "#2de500"
+    property color activeCursorColor: activeConfig.cursorColor || "#2de500"
     property real activeHue: activeCursorColor.hslHue
     property real activeSat: activeCursorColor.hslSaturation
 
@@ -113,7 +109,7 @@ Rectangle {
         transform: Rotation {
             origin.x: container.width / 2
             origin.y: container.height / 2
-            angle: (wallpaper.configuration.slant || 0.0) * 180 / Math.PI
+            angle: (activeConfig.slant || 0.0) * 180 / Math.PI
         }
 
 
@@ -130,15 +126,15 @@ Rectangle {
                 readonly property int colIndex: index
                 readonly property double columnTimeOffset: randomFloat(index, 0.0) * 1000.0
                 readonly property double columnSpeedOffset: randomFloat(index + 0.1, 0.0) * 0.5 + 0.5
-                readonly property double zDepth: (wallpaper.configuration.volumetric || false) ? (randomFloat(index + 0.2, 0.0) * 0.75 + 0.25) : 1.0
+                readonly property double zDepth: (activeConfig.volumetric || false) ? (randomFloat(index + 0.2, 0.0) * 0.75 + 0.25) : 1.0
 
                 // Column time is driven purely by C++ bindings, completely eliminating JS loop overhead
-                property double columnTime: columnTimeOffset + root.simTime * (wallpaper.configuration.fallSpeed || 0.3) * columnSpeedOffset
+                property double columnTime: columnTimeOffset + root.simTime * (activeConfig.fallSpeed || 0.3) * columnSpeedOffset
 
-                readonly property int trailLength: Math.ceil(100 * (wallpaper.configuration.raindropLength || 0.75))
+                readonly property int trailLength: Math.ceil(100 * (activeConfig.raindropLength || 0.75))
                 readonly property int maxVisibleRows: Math.ceil(root.height / root.colWidth) + 3
-                readonly property double slant: wallpaper.configuration.slant || 0.0
-                readonly property double rainTimeStep: (root.cellHeight / Math.max(1, root.height)) * 0.5 / (wallpaper.configuration.raindropLength || 0.75)
+                readonly property double slant: activeConfig.slant || 0.0
+                readonly property double rainTimeStep: (root.cellHeight / Math.max(1, root.height)) * 0.5 / (activeConfig.raindropLength || 0.75)
 
                 // 2. The Trail (fixed grid evaluating the GLSL brightness function)
                 Repeater {
@@ -149,11 +145,11 @@ Rectangle {
                         height: cellHeight
                         y: index * cellHeight
                         
-                        readonly property double raindropLength: wallpaper.configuration.raindropLength || 0.75
-                        readonly property double rawRainTime: ((1.0 - ((index * root.cellHeight) / Math.max(1, root.height))) * 0.5 + columnItem.columnTime) / (wallpaper.configuration.raindropLength || 0.75)
+                        readonly property double raindropLength: activeConfig.raindropLength || 0.75
+                        readonly property double rawRainTime: ((1.0 - ((index * root.cellHeight) / Math.max(1, root.height))) * 0.5 + columnItem.columnTime) / (activeConfig.raindropLength || 0.75)
                         
                         readonly property double rawBrightness: {
-                            var w = (wallpaper.configuration.loops || false || columnItem.slant === 0.0) ? rawRainTime : (rawRainTime + Math.sin(rawRainTime * Math.PI) * columnItem.slant);
+                            var w = (activeConfig.loops || false || columnItem.slant === 0.0) ? rawRainTime : (rawRainTime + Math.sin(rawRainTime * Math.PI) * columnItem.slant);
                             return 1.0 - (w - Math.floor(w));
                         }
                         
@@ -164,7 +160,7 @@ Rectangle {
 
                         // Mathematically isolate the exact single leading cursor cell
                         readonly property bool isCursor: {
-                            var step = (wallpaper.configuration.loops || false || columnItem.slant === 0.0) ? columnItem.rainTimeStep : (columnItem.rainTimeStep * Math.max(0.1, 1.0 + Math.cos(rawRainTime * Math.PI) * columnItem.slant * Math.PI));
+                            var step = (activeConfig.loops || false || columnItem.slant === 0.0) ? columnItem.rainTimeStep : (columnItem.rainTimeStep * Math.max(0.1, 1.0 + Math.cos(rawRainTime * Math.PI) * columnItem.slant * Math.PI));
                             return rawBrightness > (1.0 - step);
                         }
 
@@ -196,7 +192,7 @@ Rectangle {
                             // The mathematically isolated leading cursor gets the exact WebGL yellow-green "electric" hue (0.242)!
                             // When this blooms, it spreads a slightly yellow-green tint around the brightest parts of the trail.
                             // The tail matches the WebGL palette mapping: pure matrix green (0.3 / 108 deg).
-                            color: isCursor ? (wallpaper.configuration.glintColor || "#e7fecc") : Qt.hsla(root.activeHue, root.activeSat, Math.min(0.8, adjustedBrightness), 1.0)
+                            color: isCursor ? (activeConfig.glintColor || "#e7fecc") : Qt.hsla(root.activeHue, root.activeSat, Math.min(0.8, adjustedBrightness), 1.0)
                             
                             // Fade out opacity smoothly using native C++ math
                             opacity: isCursor ? 1.0 : adjustedBrightness * columnItem.zDepth
@@ -210,12 +206,12 @@ Rectangle {
                                 Rotation {
                                     origin.x: parent.width / 2
                                     origin.y: parent.height / 2
-                                    angle: wallpaper.configuration.glyphRotation || 0
+                                    angle: activeConfig.glyphRotation || 0
                                 },
                                 Scale {
                                     origin.x: parent.width / 2
                                     origin.y: parent.height / 2
-                                    xScale: wallpaper.configuration.glyphFlip ? -1 : 1
+                                    xScale: activeConfig.glyphFlip ? -1 : 1
                                 }
                             ]
                         }
@@ -294,7 +290,7 @@ Rectangle {
         id: downsampledBase
         sourceItem: squaredSource // Feed from the squared curve so bright spots bloom much more than fading trails
         hideSource: false
-        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width * Math.max(0.01, wallpaper.configuration.bloomSize !== undefined ? wallpaper.configuration.bloomSize : 0.4))), Math.max(1, Math.ceil(softBaseSource.height * Math.max(0.01, wallpaper.configuration.bloomSize !== undefined ? wallpaper.configuration.bloomSize : 0.4))))
+        textureSize: Qt.size(Math.max(1, Math.ceil(softBaseSource.width * Math.max(0.01, activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4))), Math.max(1, Math.ceil(softBaseSource.height * Math.max(0.01, activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4))))
         visible: false
     }
 
@@ -371,7 +367,7 @@ Rectangle {
     Rectangle {
         id: bloomStrengthMask
         anchors.fill: softBaseSource
-        color: Qt.rgba(0, 0, 0, wallpaper.configuration.bloomStrength || 0.7)
+        color: Qt.rgba(0, 0, 0, activeConfig.bloomStrength || 0.7)
         visible: false
     }
 
@@ -431,7 +427,7 @@ Rectangle {
             // Cap delta time to prevent massive jumps if animation stops
             if (dt > 0.1) dt = 0.016;
 
-            var timeStep = dt * (wallpaper.configuration.animationSpeed || 1.0);
+            var timeStep = dt * (activeConfig.animationSpeed || 1.0);
             root.simTime += timeStep;
 
             // Simulation logic is entirely handled by QML property bindings now!
@@ -457,7 +453,7 @@ Rectangle {
     }
 
     Connections {
-        target: wallpaper.configuration
+        target: activeConfig
         // declarative bindings automatically handle changes
     }
 }
