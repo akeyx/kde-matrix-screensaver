@@ -70,10 +70,10 @@ Rectangle {
     readonly property int columnsCount: {
         if (activeConfig.scalingMode === 1) {
             // Fixed Character Size (Auto-fill columns based on screen width)
-            return Math.max(1, Math.floor(width / (activeConfig.characterSize || 24)))
+            return Math.max(1, Math.floor(width / (activeConfig.characterSize !== undefined ? activeConfig.characterSize : 24)))
         } else {
             // Fixed Number of Columns
-            return activeConfig.numColumns || 80
+            return activeConfig.numColumns !== undefined ? activeConfig.numColumns : 80
         }
     }
     readonly property double colWidth: width / columnsCount
@@ -83,7 +83,7 @@ Rectangle {
     property var colsArray: []
     
     // Staggered ticks for text cycling to ensure cells change independently without evaluating 2400 bindings every frame
-    property double cycleSpeed: activeConfig.cycleSpeed || 0.03
+    property double cycleSpeed: activeConfig.cycleSpeed !== undefined ? activeConfig.cycleSpeed : 0.03
     property int cycleTick1: Math.floor((root.simTime + 0.00) * 60.0 * cycleSpeed)
     property int cycleTick2: Math.floor((root.simTime + 10.11) * 60.0 * cycleSpeed)
     property int cycleTick3: Math.floor((root.simTime + 20.22) * 60.0 * cycleSpeed)
@@ -125,7 +125,7 @@ Rectangle {
         transform: Rotation {
             origin.x: container.width / 2
             origin.y: container.height / 2
-            angle: (activeConfig.slant || 0.0) * 180 / Math.PI
+            angle: (activeConfig.slant !== undefined ? activeConfig.slant : 0.0) * 180 / Math.PI
         }
 
 
@@ -145,12 +145,12 @@ Rectangle {
                 readonly property double zDepth: (activeConfig.volumetric || false) ? (randomFloat(index + 0.2, 0.0) * 0.75 + 0.25) : 1.0
 
                 // Column time is driven purely by C++ bindings, completely eliminating JS loop overhead
-                property double columnTime: columnTimeOffset + root.simTime * (activeConfig.fallSpeed || 0.3) * columnSpeedOffset
+                property double columnTime: columnTimeOffset + root.simTime * (activeConfig.fallSpeed !== undefined ? activeConfig.fallSpeed : 0.3) * columnSpeedOffset
 
-                readonly property int trailLength: Math.ceil(100 * (activeConfig.raindropLength || 0.75))
+                readonly property int trailLength: Math.ceil(100 * (activeConfig.raindropLength !== undefined ? activeConfig.raindropLength : 0.75))
                 readonly property int maxVisibleRows: Math.ceil(root.height / root.colWidth) + 3
-                readonly property double slant: activeConfig.slant || 0.0
-                readonly property double rainTimeStep: (root.cellHeight / Math.max(1, root.height)) * 0.5 / (activeConfig.raindropLength || 0.75)
+                readonly property double slant: activeConfig.slant !== undefined ? activeConfig.slant : 0.0
+                readonly property double rainTimeStep: (root.cellHeight / Math.max(1, root.height)) * 0.5 / (activeConfig.raindropLength !== undefined ? activeConfig.raindropLength : 0.75)
 
                 // 2. The Trail (fixed grid evaluating the GLSL brightness function)
                 Repeater {
@@ -161,8 +161,8 @@ Rectangle {
                         height: cellHeight
                         y: index * cellHeight
                         
-                        readonly property double raindropLength: activeConfig.raindropLength || 0.75
-                        readonly property double rawRainTime: ((1.0 - ((index * root.cellHeight) / Math.max(1, root.height))) * 0.5 + columnItem.columnTime) / (activeConfig.raindropLength || 0.75)
+                        readonly property double raindropLength: activeConfig.raindropLength !== undefined ? activeConfig.raindropLength : 0.75
+                        readonly property double rawRainTime: ((1.0 - ((index * root.cellHeight) / Math.max(1, root.height))) * 0.5 + columnItem.columnTime) / (activeConfig.raindropLength !== undefined ? activeConfig.raindropLength : 0.75)
                         
                         readonly property double rawBrightness: {
                             var w = (activeConfig.loops || false || columnItem.slant === 0.0) ? rawRainTime : (rawRainTime + Math.sin(rawRainTime * Math.PI) * columnItem.slant);
@@ -222,7 +222,7 @@ Rectangle {
                                 Rotation {
                                     origin.x: parent.width / 2
                                     origin.y: parent.height / 2
-                                    angle: activeConfig.glyphRotation || 0
+                                    angle: activeConfig.glyphRotation !== undefined ? activeConfig.glyphRotation : 0
                                 },
                                 Scale {
                                     origin.x: parent.width / 2
@@ -383,7 +383,7 @@ Rectangle {
     Rectangle {
         id: bloomStrengthMask
         anchors.fill: softBaseSource
-        color: Qt.rgba(0, 0, 0, activeConfig.bloomStrength || 0.7)
+        color: Qt.rgba(0, 0, 0, activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7)
         visible: false
     }
 
@@ -446,7 +446,7 @@ Rectangle {
         // Cap delta time to prevent massive jumps if animation stops
         if (dt > 0.1) dt = 0.016;
 
-        var timeStep = dt * (activeConfig.animationSpeed || 1.0);
+        var timeStep = dt * (activeConfig.animationSpeed !== undefined ? activeConfig.animationSpeed : 1.0);
         root.simTime += timeStep;
     }
 
