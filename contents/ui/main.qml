@@ -283,7 +283,9 @@ Rectangle {
         sourceItem: squaredContainer
         hideSource: true
         anchors.fill: squaredContainer
-        visible: false // This works perfectly because FastBlur is a ShaderEffect!
+        visible: false
+        // Downsample by 4x to massively increase the effective blur radius (up to 256px equivalent)
+        textureSize: Qt.size(Math.max(1, squaredContainer.width / 4), Math.max(1, squaredContainer.height / 4))
     }
 
     // Define properties updated explicitly every frame to bypass QML var binding bugs
@@ -297,7 +299,8 @@ Rectangle {
         id: blurCore
         anchors.fill: parent
         source: squaredSource
-        radius: Math.min(16, Math.max(1, 16 * root.bloomRadiusMultiplier))
+        // Allow radius up to the FastBlur limit of 64
+        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
         transparentBorder: true
         visible: false
     }
