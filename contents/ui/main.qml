@@ -300,7 +300,6 @@ Rectangle {
         radius: Math.min(16, Math.max(1, 16 * root.bloomRadiusMultiplier))
         transparentBorder: true
         visible: false
-        opacity: root.currentBloomStrength
     }
 
     FastBlur {
@@ -318,23 +317,17 @@ Rectangle {
         source: blurGlow
         color: activeConfig.glintColor || "#e7fecc"
         visible: false
-        opacity: root.currentBloomStrength
     }
 
-    Blend {
-        id: combinedBloom
+    ShaderEffect {
+        id: finalComposite
         anchors.fill: parent
-        source: blurCore
-        foregroundSource: tintedGlow
-        mode: "screen"
+        property variant primaryTex: rainColoredSource
+        property variant blurCoreTex: blurCore
+        property variant tintedGlowTex: tintedGlow
+        property real bloomStrength: root.currentBloomStrength
 
-        layer.enabled: true
-        layer.effect: Component {
-            Blend {
-                foregroundSource: rainColoredSource // Reads full opacity sharp text!
-                mode: "screen"
-            }
-        }
+        fragmentShader: "compose.frag.qsb"
     }
 
     // Character set
