@@ -1,0 +1,28 @@
+# Build artifacts
+*.png
+!assets/*.png
+!contents/**/*.png
+
+# Test outputs
+bloom_test_*.png
+frame_*.png
+diff*.png
+
+# QML test scripts (root level only)
+/test_*.qml
+/record_*.qml
+/grab_*.qml
+/generate_*.qml
+/make_*.qml
+
+# Python scratch scripts
+*.py
+
+# Logs
+*.log
+*.txt
+!LICENSE
+
+# Editor files
+*~
+.*.swp

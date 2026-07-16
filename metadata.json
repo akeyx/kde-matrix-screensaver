@@ -2,19 +2,27 @@
     "KPackageStructure": "Plasma/Wallpaper",
     "KPlugin": {
         "Id": "org.kde.plasma.matrix-screensaver",
-        "Name": "Matrix Screensaver",
-        "Description": "GPU Accelerated Matrix Digital Rain Wallpaper & Screensaver",
+        "Name": "Matrix Digital Rain",
+        "Description": "GPU-accelerated Matrix digital rain wallpaper and screensaver for KDE Plasma 6. Native QML rewrite of Rezmason's iconic WebGL effect.",
         "Icon": "preferences-desktop-screensaver",
         "ServiceTypes": [
             "Plasma/Wallpaper"
         ],
         "Authors": [
             {
-                "Name": "Antigravity",
+                "Name": "a.key",
                 "Email": "a.key@moronet.pl"
             }
         ],
-        "Version": "1.0",
-        "License": "MIT"
-    }
+        "Version": "1.1.0",
+        "License": "MIT",
+        "Website": "https://github.com/akeyx/kde-matrix-screensaver",
+        "BugReportUrl": "https://github.com/akeyx/kde-matrix-screensaver/issues",
+        "FormFactors": [
+            "desktop",
+            "tablet"
+        ],
+        "EnabledByDefault": true
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
 }
