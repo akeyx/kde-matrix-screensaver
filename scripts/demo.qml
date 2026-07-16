@@ -2,6 +2,14 @@ import QtQuick 2.15
 import QtQuick.Window 2.15
 
 Window {
+    /*
+    Timer {
+        interval: 3000
+        running: true
+        onTriggered: Qt.quit()
+    }
+    */
+
     id: testWin
 
     property real bloomSize: 0.5
@@ -9,8 +17,8 @@ Window {
         "configuration": testWin
     })
 
-    width: 200
-    height: 200
+    width: 800
+    height: 600
     visible: true
     color: "black"
 
@@ -33,12 +41,6 @@ Window {
             console.log("currentBloomSize:", mainLoader.item.currentBloomSize);
             testWin.bloomSize += 0.1;
         }
-    }
-
-    Timer {
-        interval: 3000
-        running: true
-        onTriggered: Qt.quit()
     }
 
 }
