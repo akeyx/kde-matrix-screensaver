@@ -51,7 +51,7 @@ Rectangle {
 
     FontLoader {
         id: matrixFont
-        source: "../matrix/assets/Matrix-Code.ttf"
+        source: "../fonts/Matrix-Code.ttf"
     }
 
     // Grid size parameters
