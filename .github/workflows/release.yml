@@ -1,0 +1,30 @@
+name: Build and Release KPackage
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on version tags (e.g., v1.0.0)
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Create KPackage archive
+        run: |
+          # Create a compressed tarball containing just the files Plasma needs
+          tar -cJf matrix-screensaver.tar.xz metadata.json contents/
+          
+          # Alternatively, Plasma also supports ZIP files seamlessly
+          zip -r matrix-screensaver.zip metadata.json contents/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            matrix-screensaver.tar.xz
+            matrix-screensaver.zip
+          generate_release_notes: true
