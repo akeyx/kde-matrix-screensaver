@@ -8,7 +8,7 @@ This project is a native QML and Qt shader rewrite of the incredible [web-based 
 
 While there are methods to run the original WebGL code as a wallpaper in KDE using webview plugins, this approach has a critical flaw for many users. The original WebGL code in combination with AMD/MESA graphics drivers triggers a driver bug that results in a glaring diagonal white artifact cutting across the entire effect. 
 
-![AMD MESA Driver Artifact](assets/amd_artifact.png)
+![Matrix Screensaver Demo](assets/demo.gif)
 
 By rewriting the rendering pipeline natively using KDE Plasma's QML and Qt's `ShaderEffect` framework, this project:
 - Completely bypasses the AMD/MESA driver artifact issue
