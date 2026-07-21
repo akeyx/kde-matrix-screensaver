@@ -37,7 +37,6 @@ Rectangle {
         cursorColor: "#c1ff75",
         backgroundColor: "#000000",
         glintColor: "#ffffff",
-        volumetric: false,
         glyphFlip: false,
         glyphRotation: 0,
         skipIntro: true,
@@ -128,7 +127,7 @@ Rectangle {
                 readonly property int colIndex: index
                 readonly property double columnTimeOffset: randomFloat(index, 0.0) * 1000.0
                 readonly property double columnSpeedOffset: randomFloat(index + 0.1, 0.0) * 0.5 + 0.5
-                readonly property double zDepth: (activeConfig.volumetric || false) ? (randomFloat(index + 0.2, 0.0) * 0.75 + 0.25) : 1.0
+                readonly property double zDepth: 1.0
 
                 // Column time is driven purely by C++ bindings, completely eliminating JS loop overhead
                 property double columnTime: columnTimeOffset + root.simTime * (activeConfig.fallSpeed !== undefined ? activeConfig.fallSpeed : 0.3) * columnSpeedOffset
@@ -237,7 +236,7 @@ Rectangle {
         property real numColumns: root.columnsCount
         property real screenRows: root.height / Math.max(1, root.cellHeight)
         property real cellHeightRatio: root.cellHeight / Math.max(1, root.height)
-        property real volumetric: (activeConfig.volumetric || false) ? 1.0 : 0.0
+
         property real loops: (activeConfig.loops || false) ? 1.0 : 0.0
         property color glintColor: activeConfig.glintColor || "#e7fecc"
         property color baseColor: Qt.hsla(root.activeHue, root.activeSat, 0.5, 1.0)

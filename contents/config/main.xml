@@ -53,9 +53,7 @@
         <entry name="cursorIntensity" type="Double">
             <default>0.5</default>
         </entry>
-        <entry name="volumetric" type="Bool">
-            <default>false</default>
-        </entry>
+
         <entry name="glyphFlip" type="Bool">
             <default>false</default>
         </entry>

@@ -14,7 +14,6 @@ layout(std140, binding = 0) uniform buf {
     float numColumns;
     float screenRows;
     float cellHeightRatio;
-    float volumetric;
     float loops;
     vec4 glintColor;
     vec4 baseColor;
@@ -55,7 +54,7 @@ void main() {
     
     float columnTimeOffset = randomFloat(webglX, 0.0) * 1000.0;
     float columnSpeedOffset = randomFloat(webglX + 0.1, 0.0) * 0.5 + 0.5;
-    float zDepth = volumetric > 0.0 ? (randomFloat(webglX + 0.2, 0.0) * 0.75 + 0.25) : 1.0;
+    float zDepth = 1.0;
     
     float columnTime = columnTimeOffset + simTime * fallSpeed * columnSpeedOffset * zDepth;
     float rawRainTime = (webglY * 0.01 + columnTime) / raindropLength;

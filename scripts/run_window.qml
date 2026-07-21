@@ -17,7 +17,7 @@ Window {
     property color glintColor: "#ffffff"
     property double raindropLength: 0.75
     property double slant: 0.0
-    property bool volumetric: false
+
     property bool glyphFlip: false
     property int glyphRotation: 0
     property double animationSpeed: 1.0

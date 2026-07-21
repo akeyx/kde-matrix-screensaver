@@ -34,7 +34,6 @@ Item {
     property double cfg_trailBrightness: 1.0
     property double cfg_glintIntensity: 0.35
     property double cfg_cursorIntensity: 0.5
-    property bool cfg_volumetric: false
     property bool cfg_glyphFlip: false
     property int cfg_glyphRotation: 0
 
@@ -58,7 +57,6 @@ Item {
         cfg_trailBrightness = 1.0
         cfg_glintIntensity = 0.35
         cfg_cursorIntensity = 0.5
-        cfg_volumetric = false
         cfg_glyphFlip = false
         cfg_glyphRotation = 0
     }
@@ -300,11 +298,7 @@ Item {
                     Layout.fillWidth: true
                 }
 
-                QQC2.CheckBox {
-                    Kirigami.FormData.label: translate("3D / Volumetric Rain:")
-                    checked: root.cfg_volumetric
-                    onToggled: root.cfg_volumetric = checked
-                }
+
 
                 QQC2.CheckBox {
                     Kirigami.FormData.label: translate("Flip Glyphs Horizontally:")
@@ -371,7 +365,7 @@ Item {
             property real trailBrightness: root.cfg_trailBrightness
             property real glintIntensity: root.cfg_glintIntensity
             property real cursorIntensity: root.cfg_cursorIntensity
-            property bool volumetric: root.cfg_volumetric
+
             property bool glyphFlip: root.cfg_glyphFlip
             property int glyphRotation: root.cfg_glyphRotation
 
