@@ -25,6 +25,7 @@ Rectangle {
         animationSpeed: 1.0,
         fallSpeed: 0.3,
         cycleSpeed: 0.03,
+        trailBrightness: 1.0,
         raindropLength: 0.75,
         slant: 0.0,
         bloomSize: 0.4,
@@ -238,6 +239,7 @@ Rectangle {
         property real loops: (activeConfig.loops || false) ? 1.0 : 0.0
         property color glintColor: activeConfig.glintColor || "#e7fecc"
         property color baseColor: Qt.hsla(root.activeHue, root.activeSat, 0.5, 1.0)
+        property real trailBrightness: activeConfig.trailBrightness !== undefined ? activeConfig.trailBrightness : 1.0
         fragmentShader: "rain.frag.qsb"
     }
 

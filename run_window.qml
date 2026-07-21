@@ -25,6 +25,7 @@ Window {
     property double cycleSpeed: 0.03
     property int scalingMode: 1
     property int characterSize: 40
+    property double trailBrightness: 1.0
 
     property var wallpaper: ({
         configuration: window

@@ -31,6 +31,7 @@ Item {
     property color cfg_cursorColor: "#c1ff75"
     property color cfg_backgroundColor: "#000000"
     property color cfg_glintColor: "#ffffff"
+    property double cfg_trailBrightness: 1.0
     property bool cfg_volumetric: false
     property bool cfg_glyphFlip: false
     property int cfg_glyphRotation: 0
@@ -52,6 +53,7 @@ Item {
         cfg_cursorColor = "#c1ff75"
         cfg_backgroundColor = "#000000"
         cfg_glintColor = "#ffffff"
+        cfg_trailBrightness = 1.0
         cfg_volumetric = false
         cfg_glyphFlip = false
         cfg_glyphRotation = 0
@@ -180,6 +182,22 @@ Item {
                     }
                     QQC2.Label {
                         text: slantSlider.value.toFixed(1) + "°"
+                        Layout.preferredWidth: 40
+                    }
+                }
+
+                RowLayout {
+                    Kirigami.FormData.label: translate("Trail Brightness:")
+                    QQC2.Slider {
+                        id: trailBrightnessSlider
+                        from: 0.5
+                        to: 3.0
+                        value: root.cfg_trailBrightness
+                        onMoved: root.cfg_trailBrightness = value
+                        Layout.fillWidth: true
+                    }
+                    QQC2.Label {
+                        text: trailBrightnessSlider.value.toFixed(2)
                         Layout.preferredWidth: 40
                     }
                 }
