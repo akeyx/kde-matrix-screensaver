@@ -48,10 +48,10 @@
             <default>1.0</default>
         </entry>
         <entry name="glintIntensity" type="Double">
-            <default>1.0</default>
+            <default>0.35</default>
         </entry>
         <entry name="cursorIntensity" type="Double">
-            <default>2.0</default>
+            <default>0.5</default>
         </entry>
         <entry name="volumetric" type="Bool">
             <default>false</default>
