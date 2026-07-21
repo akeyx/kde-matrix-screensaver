@@ -332,6 +332,7 @@ Item {
             property color cursorColor: root.cfg_cursorColor
             property color backgroundColor: root.cfg_backgroundColor
             property color glintColor: root.cfg_glintColor
+            property real trailBrightness: root.cfg_trailBrightness
             property bool volumetric: root.cfg_volumetric
             property bool glyphFlip: root.cfg_glyphFlip
             property int glyphRotation: root.cfg_glyphRotation
