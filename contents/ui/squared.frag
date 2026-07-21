@@ -14,17 +14,22 @@ layout(binding = 1) uniform sampler2D sourceTex;
 
 void main() {
     vec4 col = texture(sourceTex, qt_TexCoord0);
+    
+    // Save glint value from the blue channel before thresholding
+    float glintVal = col.b;
+    
     float threshold = 0.25;
     if (col.r < threshold) col.r = 0.0;
     if (col.g < threshold) col.g = 0.0;
     if (col.b < threshold) col.b = 0.0;
     
     // Detect cursor (white/near-white highlights) and apply cursorIntensity
-    // also detect glints (blended green-white highlights) and apply glintIntensity
-    if (col.r > 0.8 && col.b > 0.8) {
+    bool isCursor = (col.r > 0.8 && col.g > 0.8 && col.b > 0.8);
+    if (isCursor) {
         col.rgb *= cursorIntensity;
-    } else if (col.r > 0.3 && col.b > 0.3) {
-        col.rgb *= glintIntensity;
+    } else if (glintVal > 0.02) {
+        // Glint cell: apply a tight, clean glintIntensity boost
+        col.rgb *= (1.0 + glintIntensity * 1.5);
     }
     
     fragColor = col * qt_Opacity;

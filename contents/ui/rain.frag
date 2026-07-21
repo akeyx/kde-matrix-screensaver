@@ -107,9 +107,10 @@ void main() {
         // Set alpha and color
         finalColor.a = visualBrightness;
         
-        // Blend trail color with white glintColor based on trailGlint
-        vec3 col = baseColor.rgb * visualBrightness;
-        col = mix(col, glintColor.rgb * visualBrightness, trailGlint * glintIntensity * 0.8);
+        // Blend green baseColor with white glintColor before applying visualBrightness
+        vec3 col = baseColor.rgb;
+        col = mix(col, glintColor.rgb, glintStrength * glintIntensity * 0.7);
+        col *= visualBrightness;
         
         finalColor.rgb = col * zDepth;
     }
