@@ -17,7 +17,7 @@ Item {
 
     // Define all config properties on the root item so KCM can bind them!
     property int cfg_numColumns: 80
-    property int cfg_scalingMode: 1
+    property int cfg_scalingMode: 0
     property int cfg_characterSize: 40
     property double cfg_animationSpeed: 1.0
     property double cfg_fallSpeed: 0.3
@@ -26,9 +26,9 @@ Item {
     property double cfg_slant: 0.0
     property double cfg_bloomSize: 0.4
     property double cfg_bloomStrength: 0.7
-    property color cfg_cursorColor: "#2de500"
+    property color cfg_cursorColor: "#c1ff75"
     property color cfg_backgroundColor: "#000000"
-    property color cfg_glintColor: "#e7fecc"
+    property color cfg_glintColor: "#ffffff"
     property bool cfg_volumetric: false
     property bool cfg_glyphFlip: false
     property int cfg_glyphRotation: 0
@@ -38,7 +38,7 @@ Item {
 
     function resetToDefaults() {
         cfg_numColumns = 80
-        cfg_scalingMode = 1
+        cfg_scalingMode = 0
         cfg_characterSize = 40
         cfg_animationSpeed = 1.0
         cfg_fallSpeed = 0.3
@@ -47,9 +47,9 @@ Item {
         cfg_slant = 0.0
         cfg_bloomSize = 0.4
         cfg_bloomStrength = 0.7
-        cfg_cursorColor = "#2de500"
+        cfg_cursorColor = "#c1ff75"
         cfg_backgroundColor = "#000000"
-        cfg_glintColor = "#e7fecc"
+        cfg_glintColor = "#ffffff"
         cfg_volumetric = false
         cfg_glyphFlip = false
         cfg_glyphRotation = 0

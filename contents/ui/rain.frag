@@ -51,12 +51,11 @@ void main() {
     float webglX = xRatio * 100.0;
     float webglY = (1.0 - yRatio) * 80.0;
     
-    // FIX: Multiply by 10.0 instead of 1000.0 to prevent fp16 precision loss
-    float columnTimeOffset = randomFloat(webglX, 0.0) * 10.0;
+    float columnTimeOffset = randomFloat(webglX, 0.0) * 1000.0;
     float columnSpeedOffset = randomFloat(webglX + 0.1, 0.0) * 0.5 + 0.5;
     float zDepth = volumetric > 0.0 ? (randomFloat(webglX + 0.2, 0.0) * 0.75 + 0.25) : 1.0;
     
-    float columnTime = columnTimeOffset + simTime * fallSpeed * columnSpeedOffset;
+    float columnTime = columnTimeOffset + simTime * fallSpeed * columnSpeedOffset * zDepth;
     float rawRainTime = (webglY * 0.01 + columnTime) / raindropLength;
     
     float SQRT_2 = 1.4142135623730951;

@@ -19,7 +19,7 @@ Rectangle {
         version: "classic",
         font: "matrixcode",
         effect: "palette",
-        scalingMode: 1,
+        scalingMode: 0,
         characterSize: 40,
         numColumns: 80,
         animationSpeed: 1.0,
@@ -199,32 +199,15 @@ Rectangle {
         sourceItem: container
         hideSource: true
         anchors.fill: container
-        visible: false
-    }
-
-    // Soften the razor-sharp vector text to match WebGL's raster font texture
-    FastBlur {
-        id: softBase
-        anchors.fill: containerSource
-        source: containerSource
-        radius: 3
-        transparentBorder: true
-        visible: false
-    }
-
-    ShaderEffectSource {
-        id: softBaseSource
-        sourceItem: softBase
-        hideSource: true
-        anchors.fill: softBase
+        smooth: true
         visible: false
     }
 
     ShaderEffect {
         id: rainColored
-        anchors.fill: softBaseSource
+        anchors.fill: containerSource
         visible: false // Will be read by rainColoredSource
-        property variant source: softBaseSource
+        property variant source: containerSource
         property real simTime: root.simTime
         property real fallSpeed: activeConfig.fallSpeed !== undefined ? activeConfig.fallSpeed : 0.3
         property real raindropLength: activeConfig.raindropLength !== undefined ? activeConfig.raindropLength : 0.75
@@ -244,6 +227,7 @@ Rectangle {
         sourceItem: rainColored
         hideSource: true
         anchors.fill: rainColored
+        smooth: true
         visible: false
     }
 
@@ -266,6 +250,7 @@ Rectangle {
         id: squaredSource
         sourceItem: squaredContainer
         anchors.fill: squaredContainer
+        smooth: true
         visible: false
     }
 
@@ -276,46 +261,134 @@ Rectangle {
     property real bloomDownsample: 1.0
     property real bloomRadiusMultiplier: 1.0
 
-    FastBlur {
-        id: blurCore
-        anchors.fill: parent
-        source: squaredSource
-        // Allow radius up to the FastBlur limit of 64
-        radius: Math.min(64, Math.max(1, 32 * root.bloomRadiusMultiplier))
-        transparentBorder: true
-        visible: false
-    }
-
+    // Progressive downsample/blur pyramid levels
+    // Level 0: bloomSize scale of screen (typically 0.4x)
     ShaderEffectSource {
-        id: blurCoreSource
-        sourceItem: blurCore
-        anchors.fill: blurCore
-        visible: false
-    }
-
-    // Soft glow (downscaled container to exceed 64px FastBlur limit)
-    ShaderEffectSource {
-        id: downsampledSource
+        id: pyr0Downsample
         sourceItem: squaredContainer
-        width: Math.max(1, root.width / 4)
-        height: Math.max(1, root.height / 4)
+        width: Math.max(1, root.width * root.currentBloomSize)
+        height: Math.max(1, root.height * root.currentBloomSize)
         sourceRect: Qt.rect(0, 0, root.width, root.height)
+        smooth: true
         visible: false
     }
-
     FastBlur {
-        id: blurGlow
-        anchors.fill: downsampledSource
-        source: downsampledSource
-        radius: Math.min(64, Math.max(1, 32 * root.bloomRadiusMultiplier))
+        id: pyr0Blur
+        anchors.fill: pyr0Downsample
+        source: pyr0Downsample
+        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
         transparentBorder: true
         visible: false
     }
-
     ShaderEffectSource {
-        id: blurGlowSource
-        sourceItem: blurGlow
-        anchors.fill: blurGlow
+        id: pyr0Source
+        sourceItem: pyr0Blur
+        anchors.fill: pyr0Blur
+        smooth: true
+        visible: false
+    }
+
+    // Level 1: Half of Level 0
+    ShaderEffectSource {
+        id: pyr1Downsample
+        sourceItem: pyr0Source
+        width: Math.max(1, pyr0Downsample.width / 2)
+        height: Math.max(1, pyr0Downsample.height / 2)
+        sourceRect: Qt.rect(0, 0, pyr0Downsample.width, pyr0Downsample.height)
+        smooth: true
+        visible: false
+    }
+    FastBlur {
+        id: pyr1Blur
+        anchors.fill: pyr1Downsample
+        source: pyr1Downsample
+        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
+        transparentBorder: true
+        visible: false
+    }
+    ShaderEffectSource {
+        id: pyr1Source
+        sourceItem: pyr1Blur
+        anchors.fill: pyr1Blur
+        smooth: true
+        visible: false
+    }
+
+    // Level 2: Half of Level 1
+    ShaderEffectSource {
+        id: pyr2Downsample
+        sourceItem: pyr1Source
+        width: Math.max(1, pyr1Downsample.width / 2)
+        height: Math.max(1, pyr1Downsample.height / 2)
+        sourceRect: Qt.rect(0, 0, pyr1Downsample.width, pyr1Downsample.height)
+        smooth: true
+        visible: false
+    }
+    FastBlur {
+        id: pyr2Blur
+        anchors.fill: pyr2Downsample
+        source: pyr2Downsample
+        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
+        transparentBorder: true
+        visible: false
+    }
+    ShaderEffectSource {
+        id: pyr2Source
+        sourceItem: pyr2Blur
+        anchors.fill: pyr2Blur
+        smooth: true
+        visible: false
+    }
+
+    // Level 3: Half of Level 2
+    ShaderEffectSource {
+        id: pyr3Downsample
+        sourceItem: pyr2Source
+        width: Math.max(1, pyr2Downsample.width / 2)
+        height: Math.max(1, pyr2Downsample.height / 2)
+        sourceRect: Qt.rect(0, 0, pyr2Downsample.width, pyr2Downsample.height)
+        smooth: true
+        visible: false
+    }
+    FastBlur {
+        id: pyr3Blur
+        anchors.fill: pyr3Downsample
+        source: pyr3Downsample
+        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
+        transparentBorder: true
+        visible: false
+    }
+    ShaderEffectSource {
+        id: pyr3Source
+        sourceItem: pyr3Blur
+        anchors.fill: pyr3Blur
+        smooth: true
+        visible: false
+    }
+
+    // Level 4: Half of Level 3
+    ShaderEffectSource {
+        id: pyr4Downsample
+        sourceItem: pyr3Source
+        width: Math.max(1, pyr3Downsample.width / 2)
+        height: Math.max(1, pyr3Downsample.height / 2)
+        sourceRect: Qt.rect(0, 0, pyr3Downsample.width, pyr3Downsample.height)
+        smooth: true
+        visible: false
+    }
+    FastBlur {
+        id: pyr4Blur
+        anchors.fill: pyr4Downsample
+        source: pyr4Downsample
+        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
+        transparentBorder: true
+        visible: false
+    }
+    ShaderEffectSource {
+        id: pyr4Source
+        sourceItem: pyr4Blur
+        anchors.fill: pyr4Blur
+        smooth: true
         visible: false
     }
 
@@ -323,8 +396,11 @@ Rectangle {
         id: finalComposite
         anchors.fill: parent
         property variant primaryTex: rainColoredSource
-        property variant blurCoreTex: blurCoreSource
-        property variant blurGlowTex: blurGlowSource
+        property variant pyr0Tex: pyr0Source
+        property variant pyr1Tex: pyr1Source
+        property variant pyr2Tex: pyr2Source
+        property variant pyr3Tex: pyr3Source
+        property variant pyr4Tex: pyr4Source
         property real bloomStrength: root.currentBloomStrength
         property color glintColor: activeConfig.glintColor || "#e7fecc"
 
