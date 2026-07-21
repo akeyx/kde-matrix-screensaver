@@ -32,17 +32,4 @@ jobs:
             matrix-screensaver.zip
           generate_release_notes: true
 
-      - name: Install pling-publisher
-        run: |
-          pip install pling-publisher
 
-      - name: Upload to KDE Store (Pling)
-        env:
-          PLING_USERNAME: ${{ secrets.PLING_USERNAME }}
-          PLING_PASSWORD: ${{ secrets.PLING_PASSWORD }}
-        run: |
-          pling publisharchive \
-            --file matrix-screensaver.tar.xz \
-            --username "${PLING_USERNAME}" \
-            --password "${PLING_PASSWORD}" \
-            --project-id "2365782"
