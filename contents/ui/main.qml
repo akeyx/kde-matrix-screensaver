@@ -26,6 +26,8 @@ Rectangle {
         fallSpeed: 0.3,
         cycleSpeed: 0.03,
         trailBrightness: 1.0,
+        glintIntensity: 1.0,
+        cursorIntensity: 2.0,
         raindropLength: 0.75,
         slant: 0.0,
         bloomSize: 0.4,
@@ -240,6 +242,7 @@ Rectangle {
         property color glintColor: activeConfig.glintColor || "#e7fecc"
         property color baseColor: Qt.hsla(root.activeHue, root.activeSat, 0.5, 1.0)
         property real trailBrightness: activeConfig.trailBrightness !== undefined ? activeConfig.trailBrightness : 1.0
+        property real glintIntensity: activeConfig.glintIntensity !== undefined ? activeConfig.glintIntensity : 1.0
         fragmentShader: "rain.frag.qsb"
     }
 
@@ -263,6 +266,8 @@ Rectangle {
         ShaderEffect {
             anchors.fill: parent
             property variant sourceTex: rainColoredSource
+            property real glintIntensity: activeConfig.glintIntensity !== undefined ? activeConfig.glintIntensity : 1.0
+            property real cursorIntensity: activeConfig.cursorIntensity !== undefined ? activeConfig.cursorIntensity : 2.0
             fragmentShader: "squared.frag.qsb"
         }
     }

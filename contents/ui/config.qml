@@ -32,6 +32,8 @@ Item {
     property color cfg_backgroundColor: "#000000"
     property color cfg_glintColor: "#ffffff"
     property double cfg_trailBrightness: 1.0
+    property double cfg_glintIntensity: 1.0
+    property double cfg_cursorIntensity: 2.0
     property bool cfg_volumetric: false
     property bool cfg_glyphFlip: false
     property int cfg_glyphRotation: 0
@@ -54,6 +56,8 @@ Item {
         cfg_backgroundColor = "#000000"
         cfg_glintColor = "#ffffff"
         cfg_trailBrightness = 1.0
+        cfg_glintIntensity = 1.0
+        cfg_cursorIntensity = 2.0
         cfg_volumetric = false
         cfg_glyphFlip = false
         cfg_glyphRotation = 0
@@ -258,6 +262,38 @@ Item {
                     }
                 }
 
+                RowLayout {
+                    Kirigami.FormData.label: translate("Lead Glyph Glow:")
+                    QQC2.Slider {
+                        id: cursorIntensitySlider
+                        from: 0.0
+                        to: 5.0
+                        value: root.cfg_cursorIntensity
+                        onMoved: root.cfg_cursorIntensity = value
+                        Layout.fillWidth: true
+                    }
+                    QQC2.Label {
+                        text: cursorIntensitySlider.value.toFixed(1)
+                        Layout.preferredWidth: 40
+                    }
+                }
+
+                RowLayout {
+                    Kirigami.FormData.label: translate("Trail Sparkle Intensity:")
+                    QQC2.Slider {
+                        id: glintIntensitySlider
+                        from: 0.0
+                        to: 2.0
+                        value: root.cfg_glintIntensity
+                        onMoved: root.cfg_glintIntensity = value
+                        Layout.fillWidth: true
+                    }
+                    QQC2.Label {
+                        text: glintIntensitySlider.value.toFixed(2)
+                        Layout.preferredWidth: 40
+                    }
+                }
+
                 // Category: Mode & Advanced
                 Kirigami.Separator {
                     Kirigami.FormData.label: translate("Special Modes & Advanced")
@@ -333,6 +369,8 @@ Item {
             property color backgroundColor: root.cfg_backgroundColor
             property color glintColor: root.cfg_glintColor
             property real trailBrightness: root.cfg_trailBrightness
+            property real glintIntensity: root.cfg_glintIntensity
+            property real cursorIntensity: root.cfg_cursorIntensity
             property bool volumetric: root.cfg_volumetric
             property bool glyphFlip: root.cfg_glyphFlip
             property int glyphRotation: root.cfg_glyphRotation

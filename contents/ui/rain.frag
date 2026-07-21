@@ -19,6 +19,7 @@ layout(std140, binding = 0) uniform buf {
     vec4 glintColor;
     vec4 baseColor;
     float trailBrightness;
+    float glintIntensity;
 };
 
 float mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
@@ -88,8 +89,29 @@ void main() {
         finalColor = glintColor;
         finalColor.rgb *= finalColor.a;
     } else {
+        // Generate pseudo-random glint per cell that changes when characters cycle
+        // WebGL cycleSpeed is typically 0.03 (which is ~1.8 changes per sec)
+        // Let's use a step time that matches the character change rate
+        float stepTime = floor(simTime * 1.8);
+        float cellRand = randomFloat(colIndex + 13.37, rowIndex + stepTime);
+        
+        // 25% chance of a glint
+        float glintActive = step(0.75, cellRand); 
+        
+        // Glint strength is random between 0.4 and 1.0
+        float glintStrength = glintActive * (fract(cellRand * 10.0) * 0.6 + 0.4);
+        
+        // Glint fades out with the trail brightness
+        float trailGlint = glintStrength * visualBrightness;
+        
+        // Set alpha and color
         finalColor.a = visualBrightness;
-        finalColor.rgb = baseColor.rgb * visualBrightness * zDepth;
+        
+        // Blend trail color with white glintColor based on trailGlint
+        vec3 col = baseColor.rgb * visualBrightness;
+        col = mix(col, glintColor.rgb * visualBrightness, trailGlint * glintIntensity * 0.8);
+        
+        finalColor.rgb = col * zDepth;
     }
     
     fragColor = finalColor * texColor.a * qt_Opacity;

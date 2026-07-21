@@ -26,6 +26,8 @@ Window {
     property int scalingMode: 1
     property int characterSize: 40
     property double trailBrightness: 1.0
+    property double glintIntensity: 1.0
+    property double cursorIntensity: 2.0
 
     property var wallpaper: ({
         configuration: window
