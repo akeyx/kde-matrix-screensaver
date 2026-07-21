@@ -24,7 +24,7 @@ Window {
     property double fallSpeed: 0.3
     property double cycleSpeed: 0.03
     property int scalingMode: 1
-    property int characterSize: 40
+    property int characterSize: 15
     property double trailBrightness: 1.0
     property double glintIntensity: 1.0
     property double cursorIntensity: 2.0
