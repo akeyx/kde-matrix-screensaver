@@ -7,6 +7,8 @@ import org.kde.kquickcontrols 2.0 as KQuickControls
 
 Item {
     id: root
+    width: 600
+    height: 650
 
     // Provide a themed background so it doesn't render as solid white when tested via raw qml-qt6
     Rectangle {
