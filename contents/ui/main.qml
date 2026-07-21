@@ -19,7 +19,7 @@ Rectangle {
         version: "classic",
         font: "matrixcode",
         effect: "palette",
-        scalingMode: 0,
+        scalingMode: 1,
         characterSize: 40,
         numColumns: 80,
         animationSpeed: 1.0,
@@ -203,11 +203,30 @@ Rectangle {
         visible: false
     }
 
+    // Soften the razor-sharp vector text to match WebGL's raster font texture
+    FastBlur {
+        id: softBase
+        anchors.fill: containerSource
+        source: containerSource
+        radius: 3 // Softness matching WebGL's phosphor raster font look
+        transparentBorder: true
+        visible: false
+    }
+
+    ShaderEffectSource {
+        id: softBaseSource
+        sourceItem: softBase
+        hideSource: true
+        anchors.fill: softBase
+        smooth: true
+        visible: false
+    }
+
     ShaderEffect {
         id: rainColored
-        anchors.fill: containerSource
+        anchors.fill: softBaseSource
         visible: false // Will be read by rainColoredSource
-        property variant source: containerSource
+        property variant source: softBaseSource
         property real simTime: root.simTime
         property real fallSpeed: activeConfig.fallSpeed !== undefined ? activeConfig.fallSpeed : 0.3
         property real raindropLength: activeConfig.raindropLength !== undefined ? activeConfig.raindropLength : 0.75
@@ -254,12 +273,12 @@ Rectangle {
         visible: false
     }
 
-    // Define properties updated explicitly every frame to bypass QML var binding bugs
-    property real currentBloomSize: 0.4
-    property real currentBloomStrength: 0.1
-    property real bloomScale: 1.0
-    property real bloomDownsample: 1.0
-    property real bloomRadiusMultiplier: 1.0
+    // Define properties updated via declarative QML bindings
+    property real currentBloomSize: activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4
+    property real currentBloomStrength: activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7
+    property real bloomScale: Math.max(0.01, currentBloomSize) / 0.4
+    property real bloomDownsample: 4.0
+    property real bloomRadiusMultiplier: bloomScale
 
     // Progressive downsample/blur pyramid levels
     // Level 0: bloomSize scale of screen (typically 0.4x)
@@ -459,12 +478,6 @@ Rectangle {
         running: true
         repeat: true
         onTriggered: {
-            root.currentBloomSize = activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4;
-            root.currentBloomStrength = activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7;
-            root.bloomScale = Math.max(0.01, root.currentBloomSize) / 0.4;
-            root.bloomDownsample = 4.0;
-            root.bloomRadiusMultiplier = root.bloomScale;
-
             if (columnsRepeater.count > 0 && columnsRepeater.count !== root.colsArray.length) {
                 var temp = [];
                 for (var i = 0; i < columnsRepeater.count; i++) {

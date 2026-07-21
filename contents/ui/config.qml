@@ -17,7 +17,7 @@ Item {
 
     // Define all config properties on the root item so KCM can bind them!
     property int cfg_numColumns: 80
-    property int cfg_scalingMode: 0
+    property int cfg_scalingMode: 1
     property int cfg_characterSize: 40
     property double cfg_animationSpeed: 1.0
     property double cfg_fallSpeed: 0.3
@@ -38,7 +38,7 @@ Item {
 
     function resetToDefaults() {
         cfg_numColumns = 80
-        cfg_scalingMode = 0
+        cfg_scalingMode = 1
         cfg_characterSize = 40
         cfg_animationSpeed = 1.0
         cfg_fallSpeed = 0.3

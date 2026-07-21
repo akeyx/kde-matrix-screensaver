@@ -11,20 +11,32 @@ layout(std140, binding = 0) uniform buf {
 };
 
 layout(binding = 1) uniform sampler2D primaryTex;
-layout(binding = 2) uniform sampler2D blurCoreTex;
-layout(binding = 3) uniform sampler2D blurGlowTex;
+layout(binding = 2) uniform sampler2D pyr0Tex;
+layout(binding = 3) uniform sampler2D pyr1Tex;
+layout(binding = 4) uniform sampler2D pyr2Tex;
+layout(binding = 5) uniform sampler2D pyr3Tex;
+layout(binding = 6) uniform sampler2D pyr4Tex;
 
 void main() {
     vec4 primary = texture(primaryTex, qt_TexCoord0);
-    vec4 core = texture(blurCoreTex, qt_TexCoord0);
-    vec4 glow = texture(blurGlowTex, qt_TexCoord0);
-    glow.rgb *= glintColor.rgb;
-    glow.a *= glintColor.a;
+    vec4 p0 = texture(pyr0Tex, qt_TexCoord0);
+    vec4 p1 = texture(pyr1Tex, qt_TexCoord0);
+    vec4 p2 = texture(pyr2Tex, qt_TexCoord0);
+    vec4 p3 = texture(pyr3Tex, qt_TexCoord0);
+    vec4 p4 = texture(pyr4Tex, qt_TexCoord0);
 
-    // Combine the two bloom components
-    vec4 combinedBloom = (core + glow) * bloomStrength;
+    // Sum the levels of the pyramid with the same weights as regl/bloomPass.combine.frag.glsl
+    vec4 combinedBloom = p0 * 0.96549 +
+                         p1 * 0.92832 +
+                         p2 * 0.88790 +
+                         p3 * 0.84343 +
+                         p4 * 0.79370;
 
-    // Simple additive blend (matching WebGL original: primary + bloom)
+    // Apply power-of-two contrast scaling to match WebGL palette contrast and keep glow localized
+    combinedBloom = pow(combinedBloom, vec4(2.0)) * 1.6;
+    combinedBloom *= bloomStrength;
+
+    // Simple additive blend
     vec4 finalResult = primary + combinedBloom;
 
     // Output with overall item opacity
