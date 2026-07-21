@@ -35,7 +35,7 @@ Window {
 
     Loader {
         anchors.fill: parent
-        source: "contents/ui/main.qml"
+        source: "../contents/ui/main.qml"
         onLoaded: {
             item.testProxyConfig = window.wallpaper.configuration;
         }
