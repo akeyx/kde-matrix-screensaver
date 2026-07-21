@@ -37,8 +37,7 @@ Rectangle {
         cursorColor: "#c1ff75",
         backgroundColor: "#000000",
         glintColor: "#ffffff",
-        glyphFlip: false,
-        glyphRotation: 0,
+
         skipIntro: true,
         suppressWarnings: true,
         camera: false,
@@ -177,18 +176,7 @@ Rectangle {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
 
-                            transform: [
-                                Rotation {
-                                    origin.x: parent.width / 2
-                                    origin.y: parent.height / 2
-                                    angle: activeConfig.glyphRotation !== undefined ? activeConfig.glyphRotation : 0
-                                },
-                                Scale {
-                                    origin.x: parent.width / 2
-                                    origin.y: parent.height / 2
-                                    xScale: activeConfig.glyphFlip ? -1 : 1
-                                }
-                            ]
+
                         }
                     }
                 }

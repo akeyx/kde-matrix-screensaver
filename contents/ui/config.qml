@@ -34,8 +34,7 @@ Item {
     property double cfg_trailBrightness: 1.0
     property double cfg_glintIntensity: 0.35
     property double cfg_cursorIntensity: 0.5
-    property bool cfg_glyphFlip: false
-    property int cfg_glyphRotation: 0
+
 
     // Helper for standalone translation fallback
     readonly property var translate: (typeof i18n !== 'undefined') ? i18n : function(x) { return x; }
@@ -57,8 +56,7 @@ Item {
         cfg_trailBrightness = 1.0
         cfg_glintIntensity = 0.35
         cfg_cursorIntensity = 0.5
-        cfg_glyphFlip = false
-        cfg_glyphRotation = 0
+
     }
 
     QQC2.ScrollView {
@@ -300,19 +298,7 @@ Item {
 
 
 
-                QQC2.CheckBox {
-                    Kirigami.FormData.label: translate("Flip Glyphs Horizontally:")
-                    checked: root.cfg_glyphFlip
-                    onToggled: root.cfg_glyphFlip = checked
-                }
 
-                QQC2.ComboBox {
-                    id: rotationCombo
-                    Kirigami.FormData.label: translate("Glyph Rotation:")
-                    model: [0, 90, 180, 270]
-                    currentIndex: Math.max(0, model.indexOf(root.cfg_glyphRotation))
-                    onActivated: root.cfg_glyphRotation = model[currentIndex]
-                }
 
                 RowLayout {
                     Kirigami.FormData.label: translate("Actions:")
@@ -366,8 +352,7 @@ Item {
             property real glintIntensity: root.cfg_glintIntensity
             property real cursorIntensity: root.cfg_cursorIntensity
 
-            property bool glyphFlip: root.cfg_glyphFlip
-            property int glyphRotation: root.cfg_glyphRotation
+
 
             property var wallpaper: ({
                 configuration: testWin

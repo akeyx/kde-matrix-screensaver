@@ -18,8 +18,7 @@ Window {
     property double raindropLength: 0.75
     property double slant: 0.0
 
-    property bool glyphFlip: false
-    property int glyphRotation: 0
+
     property double animationSpeed: 1.0
     property double fallSpeed: 0.3
     property double cycleSpeed: 0.03
