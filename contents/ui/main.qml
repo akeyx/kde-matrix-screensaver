@@ -28,7 +28,7 @@ Rectangle {
         raindropLength: 0.75,
         slant: 0.0,
         bloomSize: 0.4,
-        bloomStrength: 0.7,
+        bloomStrength: 0.54,
         ditherMagnitude: 0.05,
         resolution: 0.75,
         cursorColor: "#c1ff75",
