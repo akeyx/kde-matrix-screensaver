@@ -68,7 +68,7 @@ void main() {
     
     float rawBrightness = 1.0 - fract(w);
     float adjustedBrightness = max(0.0, rawBrightness * 1.1 - 0.5);
-    float visualBrightness = clamp(adjustedBrightness * 1.7, 0.0, 1.0);
+    float visualBrightness = clamp(adjustedBrightness, 0.0, 1.0);
     
     float yRatioBelow = (rowIndex + 1.0) * cellHeightRatio;
     float webglYBelow = (1.0 - yRatioBelow) * 80.0;
