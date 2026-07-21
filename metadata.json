@@ -3,7 +3,7 @@
     "KPlugin": {
         "Id": "org.kde.plasma.matrix-screensaver",
         "Name": "Matrix Digital Rain",
-        "Description": "GPU-accelerated Matrix digital rain wallpaper and screensaver for KDE Plasma 6. Native QML rewrite of Rezmason's iconic WebGL effect.",
+        "Description": "GPU-accelerated Matrix digital rain wallpaper and screensaver for KDE Plasma 6.",
         "Icon": "preferences-desktop-screensaver",
         "ServiceTypes": [
             "Plasma/Wallpaper"
