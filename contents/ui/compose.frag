@@ -21,15 +21,11 @@ void main() {
     glow.rgb *= glintColor.rgb;
     glow.a *= glintColor.a;
 
-    // Additive blend for the two bloom components, boosted for stronger impact
-    vec4 combinedBloom = min((core + glow) * 2.5, vec4(1.0));
+    // Combine the two bloom components
+    vec4 combinedBloom = (core + glow) * bloomStrength;
 
-    // Scale bloom by bloomStrength
-    combinedBloom *= bloomStrength;
-
-    // Screen blend primary text over the bloom
-    // result = 1 - (1 - bloom) * (1 - primary)
-    vec4 finalResult = primary + combinedBloom - primary * combinedBloom;
+    // Simple additive blend (matching WebGL original: primary + bloom)
+    vec4 finalResult = primary + combinedBloom;
 
     // Output with overall item opacity
     fragColor = finalResult * qt_Opacity;

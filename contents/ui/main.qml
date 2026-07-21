@@ -281,7 +281,7 @@ Rectangle {
         anchors.fill: parent
         source: squaredSource
         // Allow radius up to the FastBlur limit of 64
-        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
+        radius: Math.min(64, Math.max(1, 32 * root.bloomRadiusMultiplier))
         transparentBorder: true
         visible: false
     }
@@ -307,7 +307,7 @@ Rectangle {
         id: blurGlow
         anchors.fill: downsampledSource
         source: downsampledSource
-        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
+        radius: Math.min(64, Math.max(1, 32 * root.bloomRadiusMultiplier))
         transparentBorder: true
         visible: false
     }
