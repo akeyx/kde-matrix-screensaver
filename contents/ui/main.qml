@@ -25,6 +25,9 @@ Rectangle {
         animationSpeed: 1.0,
         fallSpeed: 0.3,
         cycleSpeed: 0.03,
+        trailBrightness: 1.0,
+        glintIntensity: 0.35,
+        cursorIntensity: 0.5,
         raindropLength: 0.75,
         slant: 0.0,
         bloomSize: 0.4,
@@ -34,9 +37,7 @@ Rectangle {
         cursorColor: "#c1ff75",
         backgroundColor: "#000000",
         glintColor: "#ffffff",
-        volumetric: false,
-        glyphFlip: false,
-        glyphRotation: 0,
+
         skipIntro: true,
         suppressWarnings: true,
         camera: false,
@@ -125,7 +126,7 @@ Rectangle {
                 readonly property int colIndex: index
                 readonly property double columnTimeOffset: randomFloat(index, 0.0) * 1000.0
                 readonly property double columnSpeedOffset: randomFloat(index + 0.1, 0.0) * 0.5 + 0.5
-                readonly property double zDepth: (activeConfig.volumetric || false) ? (randomFloat(index + 0.2, 0.0) * 0.75 + 0.25) : 1.0
+                readonly property double zDepth: 1.0
 
                 // Column time is driven purely by C++ bindings, completely eliminating JS loop overhead
                 property double columnTime: columnTimeOffset + root.simTime * (activeConfig.fallSpeed !== undefined ? activeConfig.fallSpeed : 0.3) * columnSpeedOffset
@@ -175,18 +176,7 @@ Rectangle {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
 
-                            transform: [
-                                Rotation {
-                                    origin.x: parent.width / 2
-                                    origin.y: parent.height / 2
-                                    angle: activeConfig.glyphRotation !== undefined ? activeConfig.glyphRotation : 0
-                                },
-                                Scale {
-                                    origin.x: parent.width / 2
-                                    origin.y: parent.height / 2
-                                    xScale: activeConfig.glyphFlip ? -1 : 1
-                                }
-                            ]
+
                         }
                     }
                 }
@@ -199,6 +189,7 @@ Rectangle {
         sourceItem: container
         hideSource: true
         anchors.fill: container
+        smooth: true
         visible: false
     }
 
@@ -207,7 +198,7 @@ Rectangle {
         id: softBase
         anchors.fill: containerSource
         source: containerSource
-        radius: 3
+        radius: 3 // Softness matching WebGL's phosphor raster font look
         transparentBorder: true
         visible: false
     }
@@ -217,6 +208,7 @@ Rectangle {
         sourceItem: softBase
         hideSource: true
         anchors.fill: softBase
+        smooth: true
         visible: false
     }
 
@@ -232,10 +224,12 @@ Rectangle {
         property real numColumns: root.columnsCount
         property real screenRows: root.height / Math.max(1, root.cellHeight)
         property real cellHeightRatio: root.cellHeight / Math.max(1, root.height)
-        property real volumetric: (activeConfig.volumetric || false) ? 1.0 : 0.0
+
         property real loops: (activeConfig.loops || false) ? 1.0 : 0.0
         property color glintColor: activeConfig.glintColor || "#e7fecc"
         property color baseColor: Qt.hsla(root.activeHue, root.activeSat, 0.5, 1.0)
+        property real trailBrightness: activeConfig.trailBrightness !== undefined ? activeConfig.trailBrightness : 1.0
+        property real glintIntensity: activeConfig.glintIntensity !== undefined ? activeConfig.glintIntensity : 1.0
         fragmentShader: "rain.frag.qsb"
     }
 
@@ -244,6 +238,7 @@ Rectangle {
         sourceItem: rainColored
         hideSource: true
         anchors.fill: rainColored
+        smooth: true
         visible: false
     }
 
@@ -258,6 +253,8 @@ Rectangle {
         ShaderEffect {
             anchors.fill: parent
             property variant sourceTex: rainColoredSource
+            property real glintIntensity: activeConfig.glintIntensity !== undefined ? activeConfig.glintIntensity : 1.0
+            property real cursorIntensity: activeConfig.cursorIntensity !== undefined ? activeConfig.cursorIntensity : 2.0
             fragmentShader: "squared.frag.qsb"
         }
     }
@@ -266,56 +263,145 @@ Rectangle {
         id: squaredSource
         sourceItem: squaredContainer
         anchors.fill: squaredContainer
+        smooth: true
         visible: false
     }
 
-    // Define properties updated explicitly every frame to bypass QML var binding bugs
-    property real currentBloomSize: 0.4
-    property real currentBloomStrength: 0.1
-    property real bloomScale: 1.0
-    property real bloomDownsample: 1.0
-    property real bloomRadiusMultiplier: 1.0
+    // Define properties updated via declarative QML bindings
+    property real currentBloomSize: activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4
+    property real currentBloomStrength: activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7
+    property real bloomScale: Math.max(0.01, currentBloomSize) / 0.4
+    property real bloomDownsample: 4.0
+    property real bloomRadiusMultiplier: bloomScale
 
-    FastBlur {
-        id: blurCore
-        anchors.fill: parent
-        source: squaredSource
-        // Allow radius up to the FastBlur limit of 64
-        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
-        transparentBorder: true
-        visible: false
-    }
-
+    // Progressive downsample/blur pyramid levels
+    // Level 0: bloomSize scale of screen (typically 0.4x)
     ShaderEffectSource {
-        id: blurCoreSource
-        sourceItem: blurCore
-        anchors.fill: blurCore
-        visible: false
-    }
-
-    // Soft glow (downscaled container to exceed 64px FastBlur limit)
-    ShaderEffectSource {
-        id: downsampledSource
+        id: pyr0Downsample
         sourceItem: squaredContainer
-        width: Math.max(1, root.width / 4)
-        height: Math.max(1, root.height / 4)
+        width: Math.max(1, root.width * root.currentBloomSize)
+        height: Math.max(1, root.height * root.currentBloomSize)
         sourceRect: Qt.rect(0, 0, root.width, root.height)
+        smooth: true
         visible: false
     }
-
     FastBlur {
-        id: blurGlow
-        anchors.fill: downsampledSource
-        source: downsampledSource
-        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
+        id: pyr0Blur
+        anchors.fill: pyr0Downsample
+        source: pyr0Downsample
+        radius: Math.min(64, Math.max(1, 4 * root.bloomRadiusMultiplier))
         transparentBorder: true
         visible: false
     }
-
     ShaderEffectSource {
-        id: blurGlowSource
-        sourceItem: blurGlow
-        anchors.fill: blurGlow
+        id: pyr0Source
+        sourceItem: pyr0Blur
+        anchors.fill: pyr0Blur
+        smooth: true
+        visible: false
+    }
+
+    // Level 1: Half of Level 0
+    ShaderEffectSource {
+        id: pyr1Downsample
+        sourceItem: pyr0Source
+        width: Math.max(1, pyr0Downsample.width / 2)
+        height: Math.max(1, pyr0Downsample.height / 2)
+        sourceRect: Qt.rect(0, 0, pyr0Downsample.width, pyr0Downsample.height)
+        smooth: true
+        visible: false
+    }
+    FastBlur {
+        id: pyr1Blur
+        anchors.fill: pyr1Downsample
+        source: pyr1Downsample
+        radius: Math.min(64, Math.max(1, 4 * root.bloomRadiusMultiplier))
+        transparentBorder: true
+        visible: false
+    }
+    ShaderEffectSource {
+        id: pyr1Source
+        sourceItem: pyr1Blur
+        anchors.fill: pyr1Blur
+        smooth: true
+        visible: false
+    }
+
+    // Level 2: Half of Level 1
+    ShaderEffectSource {
+        id: pyr2Downsample
+        sourceItem: pyr1Source
+        width: Math.max(1, pyr1Downsample.width / 2)
+        height: Math.max(1, pyr1Downsample.height / 2)
+        sourceRect: Qt.rect(0, 0, pyr1Downsample.width, pyr1Downsample.height)
+        smooth: true
+        visible: false
+    }
+    FastBlur {
+        id: pyr2Blur
+        anchors.fill: pyr2Downsample
+        source: pyr2Downsample
+        radius: Math.min(64, Math.max(1, 4 * root.bloomRadiusMultiplier))
+        transparentBorder: true
+        visible: false
+    }
+    ShaderEffectSource {
+        id: pyr2Source
+        sourceItem: pyr2Blur
+        anchors.fill: pyr2Blur
+        smooth: true
+        visible: false
+    }
+
+    // Level 3: Half of Level 2
+    ShaderEffectSource {
+        id: pyr3Downsample
+        sourceItem: pyr2Source
+        width: Math.max(1, pyr2Downsample.width / 2)
+        height: Math.max(1, pyr2Downsample.height / 2)
+        sourceRect: Qt.rect(0, 0, pyr2Downsample.width, pyr2Downsample.height)
+        smooth: true
+        visible: false
+    }
+    FastBlur {
+        id: pyr3Blur
+        anchors.fill: pyr3Downsample
+        source: pyr3Downsample
+        radius: Math.min(64, Math.max(1, 4 * root.bloomRadiusMultiplier))
+        transparentBorder: true
+        visible: false
+    }
+    ShaderEffectSource {
+        id: pyr3Source
+        sourceItem: pyr3Blur
+        anchors.fill: pyr3Blur
+        smooth: true
+        visible: false
+    }
+
+    // Level 4: Half of Level 3
+    ShaderEffectSource {
+        id: pyr4Downsample
+        sourceItem: pyr3Source
+        width: Math.max(1, pyr3Downsample.width / 2)
+        height: Math.max(1, pyr3Downsample.height / 2)
+        sourceRect: Qt.rect(0, 0, pyr3Downsample.width, pyr3Downsample.height)
+        smooth: true
+        visible: false
+    }
+    FastBlur {
+        id: pyr4Blur
+        anchors.fill: pyr4Downsample
+        source: pyr4Downsample
+        radius: Math.min(64, Math.max(1, 4 * root.bloomRadiusMultiplier))
+        transparentBorder: true
+        visible: false
+    }
+    ShaderEffectSource {
+        id: pyr4Source
+        sourceItem: pyr4Blur
+        anchors.fill: pyr4Blur
+        smooth: true
         visible: false
     }
 
@@ -323,8 +409,11 @@ Rectangle {
         id: finalComposite
         anchors.fill: parent
         property variant primaryTex: rainColoredSource
-        property variant blurCoreTex: blurCoreSource
-        property variant blurGlowTex: blurGlowSource
+        property variant pyr0Tex: pyr0Source
+        property variant pyr1Tex: pyr1Source
+        property variant pyr2Tex: pyr2Source
+        property variant pyr3Tex: pyr3Source
+        property variant pyr4Tex: pyr4Source
         property real bloomStrength: root.currentBloomStrength
         property color glintColor: activeConfig.glintColor || "#e7fecc"
 
@@ -383,12 +472,6 @@ Rectangle {
         running: true
         repeat: true
         onTriggered: {
-            root.currentBloomSize = activeConfig.bloomSize !== undefined ? activeConfig.bloomSize : 0.4;
-            root.currentBloomStrength = activeConfig.bloomStrength !== undefined ? activeConfig.bloomStrength : 0.7;
-            root.bloomScale = Math.max(0.01, root.currentBloomSize) / 0.4;
-            root.bloomDownsample = 4.0;
-            root.bloomRadiusMultiplier = root.bloomScale;
-
             if (columnsRepeater.count > 0 && columnsRepeater.count !== root.colsArray.length) {
                 var temp = [];
                 for (var i = 0; i < columnsRepeater.count; i++) {

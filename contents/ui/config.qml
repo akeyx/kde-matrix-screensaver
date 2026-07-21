@@ -7,6 +7,8 @@ import org.kde.kquickcontrols 2.0 as KQuickControls
 
 Item {
     id: root
+    width: 600
+    height: 650
 
     // Provide a themed background so it doesn't render as solid white when tested via raw qml-qt6
     Rectangle {
@@ -26,12 +28,13 @@ Item {
     property double cfg_slant: 0.0
     property double cfg_bloomSize: 0.4
     property double cfg_bloomStrength: 0.7
-    property color cfg_cursorColor: "#2de500"
+    property color cfg_cursorColor: "#c1ff75"
     property color cfg_backgroundColor: "#000000"
-    property color cfg_glintColor: "#e7fecc"
-    property bool cfg_volumetric: false
-    property bool cfg_glyphFlip: false
-    property int cfg_glyphRotation: 0
+    property color cfg_glintColor: "#ffffff"
+    property double cfg_trailBrightness: 1.0
+    property double cfg_glintIntensity: 0.35
+    property double cfg_cursorIntensity: 0.5
+
 
     // Helper for standalone translation fallback
     readonly property var translate: (typeof i18n !== 'undefined') ? i18n : function(x) { return x; }
@@ -47,12 +50,13 @@ Item {
         cfg_slant = 0.0
         cfg_bloomSize = 0.4
         cfg_bloomStrength = 0.7
-        cfg_cursorColor = "#2de500"
+        cfg_cursorColor = "#c1ff75"
         cfg_backgroundColor = "#000000"
-        cfg_glintColor = "#e7fecc"
-        cfg_volumetric = false
-        cfg_glyphFlip = false
-        cfg_glyphRotation = 0
+        cfg_glintColor = "#ffffff"
+        cfg_trailBrightness = 1.0
+        cfg_glintIntensity = 0.35
+        cfg_cursorIntensity = 0.5
+
     }
 
     QQC2.ScrollView {
@@ -182,6 +186,22 @@ Item {
                     }
                 }
 
+                RowLayout {
+                    Kirigami.FormData.label: translate("Trail Brightness:")
+                    QQC2.Slider {
+                        id: trailBrightnessSlider
+                        from: 0.5
+                        to: 3.0
+                        value: root.cfg_trailBrightness
+                        onMoved: root.cfg_trailBrightness = value
+                        Layout.fillWidth: true
+                    }
+                    QQC2.Label {
+                        text: trailBrightnessSlider.value.toFixed(2)
+                        Layout.preferredWidth: 40
+                    }
+                }
+
                 // Category: Colors & Rendering
                 Kirigami.Separator {
                     Kirigami.FormData.label: translate("Colors & Glow")
@@ -238,31 +258,47 @@ Item {
                     }
                 }
 
+                RowLayout {
+                    Kirigami.FormData.label: translate("Lead Glyph Glow:")
+                    QQC2.Slider {
+                        id: cursorIntensitySlider
+                        from: 0.0
+                        to: 5.0
+                        value: root.cfg_cursorIntensity
+                        onMoved: root.cfg_cursorIntensity = value
+                        Layout.fillWidth: true
+                    }
+                    QQC2.Label {
+                        text: cursorIntensitySlider.value.toFixed(1)
+                        Layout.preferredWidth: 40
+                    }
+                }
+
+                RowLayout {
+                    Kirigami.FormData.label: translate("Trail Sparkle Intensity:")
+                    QQC2.Slider {
+                        id: glintIntensitySlider
+                        from: 0.0
+                        to: 2.0
+                        value: root.cfg_glintIntensity
+                        onMoved: root.cfg_glintIntensity = value
+                        Layout.fillWidth: true
+                    }
+                    QQC2.Label {
+                        text: glintIntensitySlider.value.toFixed(2)
+                        Layout.preferredWidth: 40
+                    }
+                }
+
                 // Category: Mode & Advanced
                 Kirigami.Separator {
                     Kirigami.FormData.label: translate("Special Modes & Advanced")
                     Layout.fillWidth: true
                 }
 
-                QQC2.CheckBox {
-                    Kirigami.FormData.label: translate("3D / Volumetric Rain:")
-                    checked: root.cfg_volumetric
-                    onToggled: root.cfg_volumetric = checked
-                }
 
-                QQC2.CheckBox {
-                    Kirigami.FormData.label: translate("Flip Glyphs Horizontally:")
-                    checked: root.cfg_glyphFlip
-                    onToggled: root.cfg_glyphFlip = checked
-                }
 
-                QQC2.ComboBox {
-                    id: rotationCombo
-                    Kirigami.FormData.label: translate("Glyph Rotation:")
-                    model: [0, 90, 180, 270]
-                    currentIndex: Math.max(0, model.indexOf(root.cfg_glyphRotation))
-                    onActivated: root.cfg_glyphRotation = model[currentIndex]
-                }
+
 
                 RowLayout {
                     Kirigami.FormData.label: translate("Actions:")
@@ -312,9 +348,11 @@ Item {
             property color cursorColor: root.cfg_cursorColor
             property color backgroundColor: root.cfg_backgroundColor
             property color glintColor: root.cfg_glintColor
-            property bool volumetric: root.cfg_volumetric
-            property bool glyphFlip: root.cfg_glyphFlip
-            property int glyphRotation: root.cfg_glyphRotation
+            property real trailBrightness: root.cfg_trailBrightness
+            property real glintIntensity: root.cfg_glintIntensity
+            property real cursorIntensity: root.cfg_cursorIntensity
+
+
 
             property var wallpaper: ({
                 configuration: testWin

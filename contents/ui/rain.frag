@@ -14,10 +14,11 @@ layout(std140, binding = 0) uniform buf {
     float numColumns;
     float screenRows;
     float cellHeightRatio;
-    float volumetric;
     float loops;
     vec4 glintColor;
     vec4 baseColor;
+    float trailBrightness;
+    float glintIntensity;
 };
 
 float mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
@@ -51,12 +52,11 @@ void main() {
     float webglX = xRatio * 100.0;
     float webglY = (1.0 - yRatio) * 80.0;
     
-    // FIX: Multiply by 10.0 instead of 1000.0 to prevent fp16 precision loss
-    float columnTimeOffset = randomFloat(webglX, 0.0) * 10.0;
+    float columnTimeOffset = randomFloat(webglX, 0.0) * 1000.0;
     float columnSpeedOffset = randomFloat(webglX + 0.1, 0.0) * 0.5 + 0.5;
-    float zDepth = volumetric > 0.0 ? (randomFloat(webglX + 0.2, 0.0) * 0.75 + 0.25) : 1.0;
+    float zDepth = 1.0;
     
-    float columnTime = columnTimeOffset + simTime * fallSpeed * columnSpeedOffset;
+    float columnTime = columnTimeOffset + simTime * fallSpeed * columnSpeedOffset * zDepth;
     float rawRainTime = (webglY * 0.01 + columnTime) / raindropLength;
     
     float SQRT_2 = 1.4142135623730951;
@@ -69,7 +69,7 @@ void main() {
     
     float rawBrightness = 1.0 - fract(w);
     float adjustedBrightness = max(0.0, rawBrightness * 1.1 - 0.5);
-    float visualBrightness = clamp(adjustedBrightness * 1.7, 0.0, 1.0);
+    float visualBrightness = clamp(adjustedBrightness * trailBrightness, 0.0, 1.0);
     
     float yRatioBelow = (rowIndex + 1.0) * cellHeightRatio;
     float webglYBelow = (1.0 - yRatioBelow) * 80.0;
@@ -88,8 +88,30 @@ void main() {
         finalColor = glintColor;
         finalColor.rgb *= finalColor.a;
     } else {
+        // Generate pseudo-random glint per cell that changes when characters cycle
+        // WebGL cycleSpeed is typically 0.03 (which is ~1.8 changes per sec)
+        // Let's use a step time that matches the character change rate
+        float stepTime = floor(simTime * 1.8);
+        float cellRand = randomFloat(colIndex + 13.37, rowIndex + stepTime);
+        
+        // 25% chance of a glint
+        float glintActive = step(0.75, cellRand); 
+        
+        // Glint strength is random between 0.4 and 1.0
+        float glintStrength = glintActive * (fract(cellRand * 10.0) * 0.6 + 0.4);
+        
+        // Glint fades out with the trail brightness
+        float trailGlint = glintStrength * visualBrightness;
+        
+        // Set alpha and color
         finalColor.a = visualBrightness;
-        finalColor.rgb = baseColor.rgb * visualBrightness * zDepth;
+        
+        // Blend green baseColor with white glintColor before applying visualBrightness
+        vec3 col = baseColor.rgb;
+        col = mix(col, glintColor.rgb, glintStrength * glintIntensity * 0.7);
+        col *= visualBrightness;
+        
+        finalColor.rgb = col * zDepth;
     }
     
     fragColor = finalColor * texColor.a * qt_Opacity;
