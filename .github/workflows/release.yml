@@ -18,7 +18,13 @@ jobs:
         
       - name: Create KPackage archive
         run: |
-          # Create a compressed tarball containing just the files Plasma needs
+          # Extract version from tag (e.g. 1.2.3 from v1.2.3)
+          VERSION=${GITHUB_REF#refs/tags/v}
+          
+          # Dynamically update Version field in metadata.json
+          jq ".KPlugin.Version = \"${VERSION}\"" metadata.json > temp.json && mv temp.json metadata.json
+          
+          # Create a compressed tarball containing the updated files
           tar -cJf matrix-screensaver.tar.xz metadata.json contents/
           
           # Alternatively, Plasma also supports ZIP files seamlessly
