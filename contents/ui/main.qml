@@ -28,7 +28,7 @@ Rectangle {
         raindropLength: 0.75,
         slant: 0.0,
         bloomSize: 0.4,
-        bloomStrength: 0.54,
+        bloomStrength: 0.7,
         ditherMagnitude: 0.05,
         resolution: 0.75,
         cursorColor: "#c1ff75",
@@ -295,7 +295,7 @@ Rectangle {
         id: pyr0Blur
         anchors.fill: pyr0Downsample
         source: pyr0Downsample
-        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
+        radius: Math.min(64, Math.max(1, 4 * root.bloomRadiusMultiplier))
         transparentBorder: true
         visible: false
     }
@@ -321,7 +321,7 @@ Rectangle {
         id: pyr1Blur
         anchors.fill: pyr1Downsample
         source: pyr1Downsample
-        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
+        radius: Math.min(64, Math.max(1, 4 * root.bloomRadiusMultiplier))
         transparentBorder: true
         visible: false
     }
@@ -347,7 +347,7 @@ Rectangle {
         id: pyr2Blur
         anchors.fill: pyr2Downsample
         source: pyr2Downsample
-        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
+        radius: Math.min(64, Math.max(1, 4 * root.bloomRadiusMultiplier))
         transparentBorder: true
         visible: false
     }
@@ -373,7 +373,7 @@ Rectangle {
         id: pyr3Blur
         anchors.fill: pyr3Downsample
         source: pyr3Downsample
-        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
+        radius: Math.min(64, Math.max(1, 4 * root.bloomRadiusMultiplier))
         transparentBorder: true
         visible: false
     }
@@ -399,7 +399,7 @@ Rectangle {
         id: pyr4Blur
         anchors.fill: pyr4Downsample
         source: pyr4Downsample
-        radius: Math.min(64, Math.max(1, 16 * root.bloomRadiusMultiplier))
+        radius: Math.min(64, Math.max(1, 4 * root.bloomRadiusMultiplier))
         transparentBorder: true
         visible: false
     }

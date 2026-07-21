@@ -27,7 +27,7 @@ Item {
     property double cfg_raindropLength: 0.75
     property double cfg_slant: 0.0
     property double cfg_bloomSize: 0.4
-    property double cfg_bloomStrength: 0.54
+    property double cfg_bloomStrength: 0.7
     property color cfg_cursorColor: "#c1ff75"
     property color cfg_backgroundColor: "#000000"
     property color cfg_glintColor: "#ffffff"
@@ -48,7 +48,7 @@ Item {
         cfg_raindropLength = 0.75
         cfg_slant = 0.0
         cfg_bloomSize = 0.4
-        cfg_bloomStrength = 0.54
+        cfg_bloomStrength = 0.7
         cfg_cursorColor = "#c1ff75"
         cfg_backgroundColor = "#000000"
         cfg_glintColor = "#ffffff"
