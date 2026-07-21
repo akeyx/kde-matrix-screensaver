@@ -31,3 +31,20 @@ jobs:
             matrix-screensaver.tar.xz
             matrix-screensaver.zip
           generate_release_notes: true
+
+      - name: Upload to KDE Store (Pling)
+        env:
+          PLING_USER: ${{ secrets.PLING_USERNAME }}
+          PLING_PASS: ${{ secrets.PLING_PASSWORD }}
+          PRODUCT_ID: "2365782"
+          FILE_PATH: "matrix-screensaver.tar.xz"
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          AUTH_HEADER=$(echo -n "${PLING_USER}:${PLING_PASS}" | base64)
+          curl -X POST \
+            -H "Authorization: Basic ${AUTH_HEADER}" \
+            -H "OCS-APIRequest: true" \
+            -F "file=@${FILE_PATH}" \
+            -F "version=${VERSION}" \
+            -F "name=matrix-screensaver-${VERSION}.tar.xz" \
+            "https://www.pling.com/ocs/v1/content/data/${PRODUCT_ID}"
