@@ -36,7 +36,7 @@ Rectangle {
         resolution: 0.75,
         cursorColor: "#c1ff75",
         backgroundColor: "#000000",
-        glintColor: "#ffffff",
+        glintColor: "#c1ff75",
 
         skipIntro: true,
         suppressWarnings: true,
@@ -226,7 +226,7 @@ Rectangle {
         property real cellHeightRatio: root.cellHeight / Math.max(1, root.height)
 
         property real loops: (activeConfig.loops || false) ? 1.0 : 0.0
-        property color glintColor: activeConfig.glintColor || "#e7fecc"
+        property color glintColor: activeConfig.glintColor || "#c1ff75"
         property color baseColor: Qt.hsla(root.activeHue, root.activeSat, 0.5, 1.0)
         property real trailBrightness: activeConfig.trailBrightness !== undefined ? activeConfig.trailBrightness : 1.0
         property real glintIntensity: activeConfig.glintIntensity !== undefined ? activeConfig.glintIntensity : 1.0
@@ -415,7 +415,7 @@ Rectangle {
         property variant pyr3Tex: pyr3Source
         property variant pyr4Tex: pyr4Source
         property real bloomStrength: root.currentBloomStrength
-        property color glintColor: activeConfig.glintColor || "#e7fecc"
+        property color glintColor: activeConfig.glintColor || "#c1ff75"
 
         fragmentShader: "compose.frag.qsb"
     }

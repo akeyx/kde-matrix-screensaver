@@ -14,7 +14,7 @@ Window {
     property double bloomStrength: 0.7
     property color cursorColor: "#c1ff75"
     property color backgroundColor: "#000000"
-    property color glintColor: "#ffffff"
+    property color glintColor: "#c1ff75"
     property double raindropLength: 0.75
     property double slant: 0.0
 

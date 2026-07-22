@@ -30,7 +30,7 @@ Item {
     property double cfg_bloomStrength: 0.7
     property color cfg_cursorColor: "#c1ff75"
     property color cfg_backgroundColor: "#000000"
-    property color cfg_glintColor: "#ffffff"
+    property color cfg_glintColor: "#c1ff75"
     property double cfg_trailBrightness: 1.0
     property double cfg_glintIntensity: 0.35
     property double cfg_cursorIntensity: 0.5
@@ -52,7 +52,7 @@ Item {
         cfg_bloomStrength = 0.7
         cfg_cursorColor = "#c1ff75"
         cfg_backgroundColor = "#000000"
-        cfg_glintColor = "#ffffff"
+        cfg_glintColor = "#c1ff75"
         cfg_trailBrightness = 1.0
         cfg_glintIntensity = 0.35
         cfg_cursorIntensity = 0.5

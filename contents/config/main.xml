@@ -42,7 +42,7 @@
             <default>#000000</default>
         </entry>
         <entry name="glintColor" type="Color">
-            <default>#ffffff</default>
+            <default>#c1ff75</default>
         </entry>
         <entry name="trailBrightness" type="Double">
             <default>1.0</default>

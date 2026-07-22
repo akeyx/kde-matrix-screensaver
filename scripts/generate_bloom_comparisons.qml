@@ -20,7 +20,7 @@ Window {
     property real bloomStrength: 0.0
     property color cursorColor: "#2de500"
     property color backgroundColor: "#000000"
-    property color glintColor: "#e7fecc"
+    property color glintColor: "#c1ff75"
     property bool volumetric: false
     property bool glyphFlip: false
     property int glyphRotation: 0
