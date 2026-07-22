@@ -253,6 +253,7 @@ Rectangle {
         ShaderEffect {
             anchors.fill: parent
             property variant sourceTex: rainColoredSource
+            property color glintColor: activeConfig.glintColor || "#c1ff75"
             property real glintIntensity: activeConfig.glintIntensity !== undefined ? activeConfig.glintIntensity : 1.0
             property real cursorIntensity: activeConfig.cursorIntensity !== undefined ? activeConfig.cursorIntensity : 2.0
             fragmentShader: "squared.frag.qsb"
