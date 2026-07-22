@@ -33,7 +33,7 @@ Item {
     property color cfg_glintColor: "#c1ff75"
     property double cfg_trailBrightness: 1.0
     property double cfg_glintIntensity: 0.35
-    property double cfg_cursorIntensity: 0.5
+    property double cfg_cursorIntensity: 0.7
 
 
     // Helper for standalone translation fallback
@@ -55,7 +55,7 @@ Item {
         cfg_glintColor = "#c1ff75"
         cfg_trailBrightness = 1.0
         cfg_glintIntensity = 0.35
-        cfg_cursorIntensity = 0.5
+        cfg_cursorIntensity = 0.7
 
     }
 

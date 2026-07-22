@@ -27,7 +27,7 @@ Rectangle {
         cycleSpeed: 0.03,
         trailBrightness: 1.0,
         glintIntensity: 0.35,
-        cursorIntensity: 0.5,
+        cursorIntensity: 0.7,
         raindropLength: 0.75,
         slant: 0.0,
         bloomSize: 0.4,

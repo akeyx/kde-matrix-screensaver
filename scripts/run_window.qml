@@ -26,7 +26,7 @@ Window {
     property int characterSize: 15
     property double trailBrightness: 1.0
     property double glintIntensity: 0.35
-    property double cursorIntensity: 0.5
+    property double cursorIntensity: 0.7
 
     property var wallpaper: ({
         configuration: window
